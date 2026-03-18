@@ -21,15 +21,13 @@ PPL = exp(-1/N × Σ log P(token_i | token_1, ..., token_i-1))
 PPL 값이 낮을수록 좋다.
 
 #### #### 
-* https://github.com/gnosia93/agentic-ai-eks/blob/main/code/qwen_ppl.py
-
-이걸 파인튜닝 전후로 비교하면:
+[qwen_ppl](https://github.com/gnosia93/agentic-ai-eks/blob/main/code/qwen_ppl.py)로 파인튜닝 전후로 비교하면:
 ```
+예를 들어 
 파인튜닝 전 도메인 PPL: 15.3
 파인튜닝 후 도메인 PPL: 4.2   ← 도메인 이해도 향상 확인
 ```
 동시에 일반 텍스트에 대한 PPL도 같이 측정해서, 일반 PPL이 크게 올라가면 catastrophic forgetting이 발생한 거라고 판단할 수 있다.
-
 ```
               도메인 PPL    일반 PPL
 파인튜닝 전     15.3         8.1

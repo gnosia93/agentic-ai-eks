@@ -10,7 +10,8 @@ from transformers import (
     TrainingArguments,
 )
 from peft import LoraConfig, get_peft_model
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
+import trl
 
 # ============================================================
 # 1. 모델 로드 
@@ -41,7 +42,7 @@ model = AutoModelForCausalLM.from_pretrained(
     model_name,
 #    quantization_config=bnb_config,
     torch_dtype=torch.bfloat16, 
-    device_map="auto",
+    device_map={"": 0},  # 전체 모델을 GPU 0에 명시적으로 배치
     trust_remote_code=True,
 )
 
@@ -109,7 +110,8 @@ dataset = dataset.map(format_chat)
 # ============================================================
 # 4. 학습
 # ============================================================
-training_args = TrainingArguments(
+print(trl.__version__)
+training_args = SFTConfig(
     output_dir="./qwen-devops-lora",
     num_train_epochs=3,
     per_device_train_batch_size=2,
@@ -118,7 +120,9 @@ training_args = TrainingArguments(
     bf16=True,
     logging_steps=1,
     save_strategy="epoch",
-    optim="paged_adamw_8bit",
+    optim="adamw_torch",
+    dataset_text_field="text",
+    max_length=2048,
 )
 
 trainer = SFTTrainer(
@@ -126,8 +130,6 @@ trainer = SFTTrainer(
     args=training_args,
     train_dataset=dataset,
     processing_class=tokenizer,
-    dataset_text_field="text",
-    max_seq_length=2048,
 )
 
 trainer.train()

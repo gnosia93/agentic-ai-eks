@@ -1,4 +1,4 @@
-
+### Foundation 모델 ###
 * https://huggingface.co/Qwen/Qwen3.5-27B
 ```
 Qwen3.5 (2026년 2월):

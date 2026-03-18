@@ -10,6 +10,7 @@ Qwen3.5 (2026년 2월):
 ```
 
 ## LLM Benchmark ##
+* https://github.com/EleutherAI/lm-evaluation-harness
 ```
 pip install lm-eval
 
@@ -20,6 +21,8 @@ import sys
   --batch_size 4 \
   --output_path ./eval_results/
 ```
+#### 5가지 평가영역 ####
+
 | 영역 | 벤치마크 1 | 설명 | 벤치마크 2 | 설명 |
 |------|-----------|------|-----------|------|
 | Knowledge/Understanding | mmlu | 57개 학문 분야 지식 평가 (수학, 역사, 법률 등) | arc_challenge | 초등~중등 수준 과학 추론 (어려운 버전) |
@@ -28,6 +31,7 @@ import sys
 | Human Preference | truthfulqa_mc2 | 거짓/오해 유발 답변 생성 여부 (환각 측정) | openbookqa | 기본 과학 상식 + 추론 결합 |
 | Safety | toxigen | 유해/혐오 발언 생성 여부 측정 | bbq | 사회적 편향 (성별, 인종, 나이 등) 측정 |
 
+#### 평가 샘플 ####
 ![](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/images/lm-eval.png)
 
 
@@ -66,3 +70,8 @@ PPL 값이 낮을수록 좋다.
 
 ## 파인튜닝 ##
 * https://github.com/gnosia93/agentic-ai-eks/blob/main/code/qwen_finetune.py
+
+
+## 레퍼런스 ##
+* https://artificialanalysis.ai/leaderboards/models
+

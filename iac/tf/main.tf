@@ -183,7 +183,7 @@ resource "aws_instance" "gpu_box" {
 
   // 루트 볼륨 크기를 100 GB 로 설정
   root_block_device {
-    volume_size = 100 # GiB 단위
+    volume_size = 500 # GiB 단위
     volume_type = "gp3" # 최신 gp3 볼륨 타입 사용
   }
 

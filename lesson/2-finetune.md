@@ -20,6 +20,13 @@ import sys
   --batch_size 4 \
   --output_path ./eval_results/
 ```
+| 영역 | 벤치마크 1 | 벤치마크 2 |
+|------|-----------|-----------|
+| Knowledge/Understanding | mmlu | arc_challenge |
+| Reasoning | gsm8k | hellaswag |
+| Conversation | lambada_openai | winogrande |
+| Human Preference | truthfulqa_mc2 | openbookqa |
+| Safety | toxigen | bbq |
 
 
 

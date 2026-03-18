@@ -12,6 +12,39 @@
 ![](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/images/ft-code.png)
 
 
-
 ### 필요 샘플수 ###
+파인 튜닝의 목적에 따라서 필요 샘플수는 다라진다. 
 ![](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/images/ft-sample.png)
+
+
+### 참고 - 추론 ###
+PeftModel.from_pretrained(base_model, "./qwen-devops-lora") 에서 기존 base_model 의 가중치 값과 LoRA 로 튜닝된 가중치 값을 합쳐서 모델을 로딩한다.
+```
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
+
+# 1. 원본 모델 + LoRA 어댑터 합치기
+base_model = AutoModelForCausalLM.from_pretrained(
+    "Qwen/Qwen3.5-27B",
+    torch_dtype=torch.bfloat16,
+    device_map={"": 0},
+)
+model = PeftModel.from_pretrained(base_model, "./qwen-devops-lora")
+tokenizer = AutoTokenizer.from_pretrained("./qwen-devops-lora")
+
+# 2. 추론
+messages = [
+    {"role": "system", "content": "You are a helpful DevOps and ML engineering assistant."},
+    {"role": "user", "content": "GPU OOM이 발생했을 때 해결 방법을 알려줘"},
+]
+
+text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+inputs = tokenizer(text, return_tensors="pt").to(model.device)
+
+with torch.no_grad():
+    outputs = model.generate(**inputs, max_new_tokens=512)
+
+response = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+print(response)
+```

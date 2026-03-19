@@ -74,7 +74,41 @@ for score, doc in ranked[:3]:
 * 차원 수: 높을수록 정확하지만 벡터DB 저장 비용 증가
 * 도메인: 기술 문서 위주면 영어 모델로 충분
 
+#### 3단계: 도메인 데이터 평가 ###
+MTEB 점수는 범용 벤치마크 기준이라, 실제 대상 도메인에서 성능이 다를 수 있으므로, 직접 평가하는 게 가장 정확하다.
+```
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
+# 후보 모델들
+models = {
+    "bge-base": SentenceTransformer("BAAI/bge-base-en-v1.5"),
+    "bge-large": SentenceTransformer("BAAI/bge-large-en-v1.5"),
+    "e5-large": SentenceTransformer("intfloat/e5-large-v2"),
+}
+
+# 평가 데이터: (질문, 정답 문서) 쌍 30~50개 직접 작성
+eval_data = [
+    {"query": "GPU OOM 해결 방법은?", "relevant_doc_id": 0},
+    {"query": "Slurm에서 멀티노드 학습 설정은?", "relevant_doc_id": 3},
+    ...
+]
+
+# Hit Rate, MRR 측정
+for name, model in models.items():
+    hit = 0
+    mrr = 0
+    for item in eval_data:
+        query_emb = model.encode(item["query"])
+        # 벡터DB에서 상위 5개 검색 후 정답 문서가 포함되는지 확인
+        results = search(query_emb, k=5)
+        if item["relevant_doc_id"] in results:
+            hit += 1
+            rank = results.index(item["relevant_doc_id"]) + 1
+            mrr += 1 / rank
+    
+    print(f"{name}: Hit Rate@5={hit/len(eval_data):.2f}, MRR@5={mrr/len(eval_data):.2f}")
+```
 
 
 ### 3. 리랭커 모델 선정 ###

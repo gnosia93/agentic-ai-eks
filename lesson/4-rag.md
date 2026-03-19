@@ -7,7 +7,7 @@
 문서 수집 → (레이아웃) 파싱 → 청킹 → 임베딩 → 벡터DB 저장 → 검색 → 리랭킹 → LLM 생성
 ```
 
-#### 저장 샘플 ####
+#### 저장 샘플 코드 ####
 ```
 from langchain_community.document_loaders import GitHubLoader, WebBaseLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -30,7 +30,7 @@ vectordb = Chroma.from_documents(chunks, embeddings, persist_directory="./devops
 * Chroma는 기본적으로 로컬 임베디드 DB로, SQLite처럼 별도 서버 없이 파일 기반으로 동작한다.
 
 
-#### 검색 샘플 ####
+#### 검색 샘플 코드 ####
 ```
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -239,7 +239,46 @@ for name, reranker in rerankers.items():
 > 이 방식의 한계는 의미를 이해하지 못하는데, "GPU 메모리 부족"으로 검색하면 "OOM"이라고 쓴 문서를 찾을 수 없다. 그래서 Dense 벡터 검색과 합쳐서 하이브리드 서치를 활용하게 된다.
 
 
-### 5. 아키텍처 설계 ###
+### 5. 할루시네이션 방지 ###
+
+#### RAG (Retrieval-Augmented Generation) ####
+LLM이 자체 지식에 의존하지 않고, 검색된 문서를 근거로 답변하게 하는 방법으로, 가장 기본적이고 효과적이다.
+
+#### 프롬프트 엔지니어링 ####
+- "제공된 문서에 근거해서만 답변하세요"
+- "확실하지 않으면 '모르겠습니다'라고 답하세요"
+- "답변에 출처를 명시하세요"
+LLM이 모르는 걸 지어내지 않도록 지시하는 방식이다.
+
+#### 출력 검증 (가드레일) ####
+LLM 응답을 생성한 후 검증하는 단계를 추가한다.
+
+* NLI(Natural Language Inference): 응답이 검색된 문서와 모순되는지 확인
+* Self-Consistency: 같은 질문을 여러 번 생성해서 답변이 일관되는지 확인
+* LLM-as-Judge: 다른 LLM이 응답의 사실 여부를 평가
+
+```
+# NLI 예시: 응답이 근거 문서와 모순되는지 확인
+from transformers import pipeline
+
+nli = pipeline("text-classification", model="cross-encoder/nli-deberta-v3-base")
+result = nli(f"{근거문서} [SEP] {LLM응답}")
+# entailment(지지) / contradiction(모순) / neutral(무관)
+```
+cross-encoder/nli-deberta-v3-base는 약 1억 8천만(180M) 파라미터를 가지고 있고 DeBERTa-v3-base 기반으로 모델 파일 크기는 약 700MB 정도이다.
+프로덕션 환경에서 CPU 인퍼런스 가능여부는 성능을 체크해 봐야한다. 
+
+#### Temperature / Sampling 조절 ####
+```
+# temperature를 낮추면 더 보수적으로 답변 (환각 감소)
+response = model.generate(temperature=0.1, top_p=0.9)
+temperature가 높으면 창의적이지만 환각 위험 증가, 낮으면 보수적이지만 환각 감소.
+```
+프로덕션에서는 이 4가지를 조합해서 쓴다. RAG로 근거를 제공하고, 프롬프트로 제약을 걸고, NLI로 응답을 검증(Verify)하고, temperature를 낮게 설정하는 식이다.
+
+
+
+### 6. 아키텍처 설계 ###
 아키텍처 설계는 이 파이프라인을 프로덕션에서 어떻게 운영할 것인가의 전체 그림이다.
 - 인프라: FastAPI 서버, 벡터DB 클러스터, LLM 서빙(vLLM) 배치
 - 확장성: 트래픽 증가 시 어떻게 스케일링할지

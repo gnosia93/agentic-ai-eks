@@ -5,6 +5,31 @@
 문서 수집 → (레이아웃) 파싱 → 청킹 → 임베딩 → 벡터DB 저장 → 검색 → 리랭킹 → LLM 생성
 ```
 
+#### 1. 샘플코드 ####
+```
+from langchain_community.document_loaders import GitHubLoader, WebBaseLoader
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+
+# 1. GitHub에서 마크다운 수집
+loader = GitHubLoader(repo="aws/aws-parallelcluster", file_filter=lambda f: f.endswith(".md"))
+docs = loader.load()
+
+# 2. 청킹
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+chunks = splitter.split_documents(docs)
+
+# 3. 임베딩 + 벡터DB 저장
+embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
+vectordb = Chroma.from_documents(chunks, embeddings, persist_directory="./devops_vectordb")
+```
+* Chroma는 기본적으로 로컬 임베디드 DB로, SQLite처럼 별도 서버 없이 파일 기반으로 동작한다.
+
+
+
+
 
 
 

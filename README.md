@@ -31,21 +31,19 @@
    - 도메인 평가 데이터셋 구축
    - CI/CD에 평가 통합
 
-* [9. Post Training]
-   - DPO로 선호도 정렬
-   - 평가 → 재학습 루프
-
-* [10. 로컬 Docker 배포하기]
+* [9. 로컬 Docker 배포하기]
     - Docker Compose (FastAPI + vLLM + VectorDB + Monitoring)
     - 통합 테스트
 
-* [11. EKS 배포하기]
+* [10. EKS 배포하기]
     - Helm Chart 구성
     - GPU 노드에 vLLM 배포
     - HPA (Horizontal Pod Autoscaler) 설정
     - Ingress + 로드밸런싱
 
-
+* [11. Post Training]
+   - DPO로 선호도 정렬
+   - 평가 → 재학습 루프
 
 
 

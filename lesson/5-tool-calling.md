@@ -216,5 +216,69 @@ if __name__ == "__main__":
     mcp.run(transport="stdio")
 ```
 
+* LangGraph에서 MCP 도구 호출(stdio 방식)
+```
+from typing import TypedDict, Annotated
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode
+from langchain_openai import ChatOpenAI
+from langchain_mcp_adapters.tools import load_mcp_tools
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
 
+# ──────────────────────────────────────
+# MCP 서버에서 도구 가져오기
+# ──────────────────────────────────────
+async def build_graph():
+    server_params = StdioServerParameters(
+        command="python",
+        args=["mcp_server.py"],   # MCP 서버 스크립트 경로
+    )
+
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+
+            # ✅ MCP 도구 → LangChain 도구로 변환
+            tools = await load_mcp_tools(session)
+
+            # LLM에 도구 바인딩
+            llm = ChatOpenAI(model="gpt-4o")
+            llm_with_tools = llm.bind_tools(tools)
+
+            # 그래프 구성 (이전과 동일!)
+            class State(TypedDict):
+                messages: Annotated[list, add_messages]
+
+            def agent(state: State):
+                response = llm_with_tools.invoke(state["messages"])
+                return {"messages": [response]}
+
+            tool_node = ToolNode(tools)
+
+            def should_use_tool(state: State):
+                if state["messages"][-1].tool_calls:
+                    return "tools"
+                return END
+
+            graph_builder = StateGraph(State)
+            graph_builder.add_node("agent", agent)
+            graph_builder.add_node("tools", tool_node)
+            graph_builder.add_edge(START, "agent")
+            graph_builder.add_conditional_edges("agent", should_use_tool)
+            graph_builder.add_edge("tools", "agent")
+
+            graph = graph_builder.compile()
+
+            # 실행
+            result = await graph.ainvoke({
+                "messages": [{"role": "user", "content": "프로덕션 Pod 상태 확인해줘"}]
+            })
+            print(result["messages"][-1].content)
+
+# 실행
+import asyncio
+asyncio.run(build_graph())
+```
 

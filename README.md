@@ -1,4 +1,4 @@
-# Agentic AI on EKS 
+# EKS Agentic AI  
 
 * [L1. 노트북 환경 설정](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/1.start.md)
 

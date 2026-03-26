@@ -1,5 +1,7 @@
 # EKS Agentic AI  
 
+* [L0. 인프라 설치](https://github.com/gnosia93/eks-agentic-ai/tree/main/iac/tf)
+
 * [L1. 노트북 환경 설정](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/1.start.md)
 
 * [L2. LLM 평가하기](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/2-llm-eval.md)

@@ -9,14 +9,15 @@ apt-get update -y || true
 # ============================================================
 # 1. VS Code Server (code-server)
 # ============================================================
-sudo -u ubuntu -i bash -c '
-curl -fsSL https://code-server.dev/install.sh | sh
-mkdir -p /home/ubuntu/.config/code-server
-echo "bind-addr: 0.0.0.0:8080
+sudo -u ubuntu -i bash -c 'curl -fsSL https://code-server.dev/install.sh | sh'
+sudo -u ubuntu mkdir -p /home/ubuntu/.config/code-server
+cat > /home/ubuntu/.config/code-server/config.yaml <<CODEEOF
+bind-addr: 0.0.0.0:8080
 auth: password
 password: ${vscode_password}
-cert: false" > /home/ubuntu/.config/code-server/config.yaml
-'
+cert: false
+CODEEOF
+chown -R ubuntu:ubuntu /home/ubuntu/.config/code-server
 
 # ============================================================
 # 2. Python 환경

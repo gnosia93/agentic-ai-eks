@@ -29,6 +29,7 @@ curl localhost:8000/metrics
 ```
 
 #### 메트릭 타입 ####
+![](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/images/prometheus-custom-metrics.png)
 학습 모니터링에서는 Gauge(loss, throughput)와 Counter(step)를 주로 사용한다.
 
 

@@ -4,11 +4,11 @@
 
 * [L2. 로컬 PC 노트북 설정](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/1.start.md)
 
-* [L3. LLM 평가하기](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/2-llm-eval.md)
+* [L3. LLM 평가하기](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/3-llm-eval.md)
 
-* [L4. 파인튜닝하기](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/3-finetune.md)
+* [L4. 파인튜닝하기](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/4-finetune.md)
 
-* [L5. RAG 파이프라인 설계](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/4-rag.md)
+* [L5. RAG 파이프라인 설계](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/5-rag.md)
 
 * L6. Agentic AI
    - [LangGraph로 RAG 구현](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/5-langgraph-rag.md)

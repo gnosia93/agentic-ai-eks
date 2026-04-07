@@ -11,7 +11,7 @@ git clone https://github.com/gnosia93/eks-agentic-ai.git
 cd eks-agentic-ai/iac/tf
 
 terraform init
-terraform apply -auto-approve
+terraform apply --auto-approve
 ```
 
 ### 클러스터 등록 ###

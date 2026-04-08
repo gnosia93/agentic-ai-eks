@@ -35,7 +35,6 @@
 * [LOKI에 K8S 이벤트 저장하기](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a3-k8s-event.md)
 * [K8S 컨트롤 플레인](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a4-k8s-controlplan.md)
 * [Harness Engineering](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a5.harness-eng.md)
-* KV Cache 최적화, Prefill/Decode 분리, Continuous Batching, Speculative Decoding
 * 에이전트 오케스트레이션, 하네스 엔지니어링
 * 장시간 실행되는 에이전트의 상태 관리, 복구, 모니터링
 * 프롬프트 엔지니어링 심화: 시스템 프롬프트 설계, few-shot, chain-of-thought 같은 기법을 체계적으로 다루는 파트가 없어요.

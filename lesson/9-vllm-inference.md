@@ -83,3 +83,19 @@ args:
  * --speculative-model	추측 생성에 사용할 draft 모델
  * --num-speculative-tokens	draft 모델이 한 번에 추측할 토큰 수 (5가 일반적)
 draft 모델(3B)은 target 모델(27B)과 같은 GPU 메모리에 함께 로드된다. 3B 모델은 약 6GB 정도 차지하므로 L40S 48GB × 4 구성에서 메모리 여유가 충분하다.
+
+#### 성능 비교 벤치마크 ####
+Speculative Decoding 적용 후 동일한 벤치마크를 실행하여 베이스라인과 비교한다.
+
+```
+kubectl exec -it <vllm-pod-name> -- \
+  python -m vllm.entrypoints.openai.bench_serving \
+    --backend openai \
+    --base-url http://localhost:8000 \
+    --model qwen \
+    --num-prompts 100 \
+    --request-rate 10
+```
+TTFT (Time to First Token), TPOT (Time per Output Token), Throughput (tokens/sec), Request Latency (p50/p99) 을 baseline 과 비교한다.
+TPOT와 Throughput에서 가장 큰 차이가 나타난다. 일반적으로 1.5~2.5배 속도 향상을 기대할 수 있으며, 코드 생성처럼 정형화된 출력에서 효과가 더 크다.
+num-speculative-tokens는 너무 높이면 draft 모델의 추측이 틀릴 확률이 올라가서 오히려 느려질수 있다. 5가 무난한 시작점이고, 벤치마크 결과 보면서 3~7 사이에서 조절한다.

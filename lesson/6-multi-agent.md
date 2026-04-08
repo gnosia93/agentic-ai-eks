@@ -81,5 +81,5 @@ result = graph.invoke(
     config={"recursion_limit": 10},
 )
 print(result["messages"][-1].content)
-
 ```
+각 에이전트가 시스템 프롬프트로 역할을 구분하고, 같은 LLM을 공유하되 역할에 따라 다른 지시를 받는 구조이다. 에이전트별로 다른 모델을 쓰고 싶으면 LLM 인스턴스를 따로 만들면 된다.

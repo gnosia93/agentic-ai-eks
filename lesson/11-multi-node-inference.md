@@ -96,7 +96,8 @@ spec:
         - name: vllm-leader
           image: vllm/vllm-openai:latest
           args:
-          - --tensor-parallel-size=24  # 3노드 × 8GPU
+          - --tensor-parallel-size=8
+          - --pipeline-parallel-size=3
           - --model=meta-llama/Llama-3.1-70B-Instruct
           resources:
             limits:

@@ -191,3 +191,10 @@ def process_input(user_input: str) -> str:
     # Step 3: Llama Guard 3 → LLM 호출 (이후 단계)
     return masked.text
 ```
+
+## todo ##
+* 전체 코드를 프로젝트 파일로 저장 — input_sanitizer.py, pii_masker.py, pipeline.py 등으로 분리해서 실행 가능한 프로젝트 구성
+* Llama Guard 3 연동 코드 — Step 3 부분을 실제로 구현 (vLLM 또는 Hugging Face 기반)
+* 한국어 NER 연동 — Presidio + ko_core_news_lg 또는 Hugging Face koelectra 모델 연동 코드
+* FastAPI 래핑 — 파이프라인을 API 서버로 만들기
+* 테스트 코드 — 각 단계별 유닛 테스트

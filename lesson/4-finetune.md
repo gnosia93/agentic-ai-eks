@@ -83,9 +83,57 @@ vllm serve ./my-model \
 ```
 
 
+## 파인튜닝된 모델 성능 검증 ##
 
+1. Golden Dataset (필수):
+```
+# 파인튜닝 전에 미리 준비
+golden_test = [
+    {"input": "환불 방법은?", "expected": "고객센터 1234..."},
+    {"input": "배송 조회", "expected": "주문번호를 입력..."},
+    # 50-100개 정도
+]
 
+# 자동 평가
+pass_rate = 0
+for case in golden_test:
+    response = model.invoke(case["input"])
+    if similarity(response, case["expected"]) > 0.7:
+        pass_rate += 1
 
+print(f"Pass rate: {pass_rate / len(golden_test)}")
+```
 
+2. A/B 테스트 (실전):
+```
+# 실제 트래픽 10%만 새 모델로
+if random.random() < 0.1:
+    response = finetuned_model.invoke(query)
+else:
+    response = base_model.invoke(query)
+
+# 사용자 피드백 수집 (👍👎)
+# 1주일 후 비교
+```
+
+3. 샘플 사람 검증:
+```
+# 매일 랜덤 10개만 사람이 확인
+daily_sample = random.sample(responses, 10)
+
+# Slack/이메일로 전송
+# 팀원이 간단히 체크
+```
+
+4. 자동 Regression 체크:
+```
+# 기존 잘 되던 케이스 자동 테스트
+regression_test = load_previous_good_cases()
+
+for case in regression_test:
+    response = model.invoke(case["input"])
+    assert quality_check(response) == "pass"
+```
+결론: Golden Dataset + A/B 테스트 + 샘플 검증이 가장 현실적이다.
 
 

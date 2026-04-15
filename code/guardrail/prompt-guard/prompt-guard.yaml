@@ -1,0 +1,59 @@
+# prompt-guard.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prompt-guard
+  labels:
+    app: prompt-guard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: prompt-guard
+  template:
+    metadata:
+      labels:
+        app: prompt-guard
+    spec:
+      containers:
+      - name: prompt-guard
+        image: <YOUR_ECR_REPO>/prompt-guard:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-secret
+              key: token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prompt-guard
+spec:
+  selector:
+    app: prompt-guard
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: ClusterIP

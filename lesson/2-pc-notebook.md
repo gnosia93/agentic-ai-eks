@@ -1,23 +1,17 @@
-### EC2 설정 ###
+
+vscode 서버에는 Jupyter, pytorch 등의 환경이 모두 설치되어져 있다. 
+
+### 주피터 노트북 실행하기 ###
+vscode 터미널에서 아래 명령어를 실행한 후, 브라우저의 새창을 띄운후 8080 포트로 접속한다.
 ```
-# venv로 환경 생성
-python3 -m venv ~/gpu-dev
-source ~/gpu-dev/bin/activate
-
-# pytorch 설치 
-pip uninstall torch torchvision -y
-pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu130
-python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name())"
-
-# Jupyter 설치
-pip install jupyterlab ipykernel
-python -m ipykernel install --user --name gpu-dev --display-name "gpu-dev"
+jupyter lab --ip=0.0.0.0 --port=8080 --no-browser --NotebookApp.token='' --NotebookApp.password=''
 ```
 
-### VS CODE 설정 ###
-```
-VS Code Remote SSH에서 직접 입력할 때는 SSH config 방식으로 해야 한다.
 
+
+### 참고 - PC 의 VS CODE 설정 ###
+이 방식은 로컬 PC 의 vs code 에서 리모트에 있는 vscode 서버로 ssh 로 접속하여 주피터 노트북을 실행하는 방법이다.
+```
 ~/.ssh/config 파일에 추가:
 
 Host gpu-dev

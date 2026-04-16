@@ -240,7 +240,7 @@ Handling connection for 8080
 ## vLLM 추론 최적화 ##
 vLLM은 아래 세 가지 최적화를 기본 내장하고 있어 별도 설정 없이 자동 적용된다.
 
-#### KV Cache 최적화 (PagedAttention) ####
+#### 1. KV Cache 최적화 (PagedAttention) ####
 Transformer는 토큰을 생성할 때마다 이전 토큰들의 Key/Value 텐서를 참조해야 한다. 이를 KV Cache라 하며, 시퀀스가 길어질수록 GPU 메모리를 많이 차지한다.
 기존 방식은 요청마다 max-model-len 크기의 연속 메모리를 미리 할당했다. 실제로 10토큰만 생성해도 4096토큰분의 메모리를 점유하므로 낭비가 심하다.
 vLLM의 PagedAttention은 OS의 가상 메모리 페이징에서 착안한 방식으로, KV Cache를 고정 크기 블록(페이지) 단위로 나누어 필요할 때만 할당한다.
@@ -257,44 +257,20 @@ PagedAttention:
 ```
 이를 통해 동일 GPU 메모리에서 더 많은 요청을 동시에 처리할 수 있다. --gpu-memory-utilization과 --max-model-len 파라미터가 전체 KV Cache 풀 크기를 결정한다.
 
-#### Continuous Batching ####
+#### 2. Continuous Batching ####
 기존 Static Batching은 배치 안의 모든 요청이 완료될 때까지 기다린 후 다음 배치를 처리한다. 짧은 요청이 먼저 끝나도 긴 요청이 끝날 때까지 GPU가 유휴 상태가 된다.
 vLLM은 매 토큰 생성 스텝마다 배치를 재구성하여 완료된 요청을 빼고 대기 중인 요청을 즉시 투입한다. 이를 통해 GPU 활용률과 전체 처리량(throughput)이 크게 향상된다.
 
-#### Prefill/Decode 분리 ####
-LLM 추론은 두 단계로 나뉜다.
-* Prefill: 입력 프롬프트의 모든 토큰을 한 번에 처리하여 KV Cache를 생성하는 단계. 행렬 연산이 크고 GPU 연산(compute)이 병목이다.
-* Decode: KV Cache를 참조하며 토큰을 하나씩 생성하는 단계. 연산량은 적지만 매 스텝마다 GPU 메모리를 읽어야 하므로 메모리 대역폭(memory bandwidth)이 병목이다.
-두 단계의 리소스 특성이 다르기 때문에, 같은 GPU에서 Prefill과 Decode가 섞이면 서로 간섭이 발생한다. 긴 프롬프트의 Prefill이 실행되면 Decode 중인 요청의 TPOT(Time per Output Token)이 튀는 현상이 생긴다. vLLM은 내부 스케줄러에서 Prefill과 Decode의 우선순위를 조절하여 이 간섭을 최소화한다.
+#### 3. Prefix Caching ####
+LLM API 호출 시 시스템 프롬프트나 few-shot 예시처럼 여러 요청에서 반복되는 앞부분(prefix)이 있다. 이 prefix에 대한 KV Cache를 한 번 계산해두고 재사용하면, 매 요청마다 같은 계산을 반복하지 않아도 된다.
+vLLM 0.19.0부터 기본으로 활성화(enable_prefix_caching=True)되어 있다. 해당 설정을 끄기 위해서는 --enable-prefix-caching=False 파라미터를 사용한다.
+이 설정은 다음과 같은 경우에 유리하다.
+* 긴 시스템 프롬프트를 공유하는 API 서비스
+* Few-shot 예시가 동일한 반복 요청
+* RAG에서 동일 문서 컨텍스트를 여러 질문에 사용하는 경우
+* 멀티턴 대화에서 이전 대화 히스토리가 공통인 경우
 
-### 테스트 하기 ###
-```bash
-# 클러스터 내부에서 테스트 (임시 파드)
-kubectl run test --rm -it --image=curlimages/curl -- \
-  curl http://vllm-qwen-svc/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "qwen",
-    "messages": [{"role": "user", "content": "Hello"}],
-    "max_tokens": 50
-  }'
-```
-또는
-```bash
-# 터미널 1: 포트 포워딩
-kubectl port-forward svc/vllm-qwen-svc 8080:80
-
-# 터미널 2: 테스트
-curl http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "qwen",
-    "messages": [{"role": "user", "content": "Hello"}],
-    "max_tokens": 50
-  }'
-```
-
-### 성능 밴치마크 ###
+## 성능 밴치마크 ##
 ```bash
 kubectl get pods
 
@@ -308,44 +284,9 @@ python -m vllm.entrypoints.openai.bench_serving \
   --num-prompts 100 \
   --request-rate 10
 ```
-
-### Speculative Decoding 적용 ###
-Speculative Decoding은 작은 모델(draft)이 먼저 여러 토큰을 추측 생성하고, 큰 모델(target)이 한 번에 검증하는 방식으로 추론 속도를 높이는 방식이다.
-
-* Target 모델: Qwen2.5-27B (기존 배포 모델)
-* Draft 모델: Qwen2.5-3B (같은 계열의 작은 모델, 추측 적중률이 높음)
-기존 vllm-qwen.yaml 에서 args 부분만 수정한다.
-```
-args:
-  - "--model=Qwen/Qwen2.5-Coder-27B-Instruct"
-  - "--tensor-parallel-size=4"
-  - "--max-model-len=4096"
-  - "--gpu-memory-utilization=0.90"
-  - "--speculative-model=Qwen/Qwen2.5-Coder-3B-Instruct"
-  - "--num-speculative-tokens=5"
-```
-
-* 파라미터	설명
- * --speculative-model	추측 생성에 사용할 draft 모델
- * --num-speculative-tokens	draft 모델이 한 번에 추측할 토큰 수 (5가 일반적)
-draft 모델(3B)은 target 모델(27B)과 같은 GPU 메모리에 함께 로드된다. 3B 모델은 약 6GB 정도 차지하므로 L40S 48GB × 4 구성에서 메모리 여유가 충분하다.
-
-#### 성능 비교 벤치마크 ####
-Speculative Decoding 적용 후 동일한 벤치마크를 실행하여 베이스라인과 비교한다.
-
-```
-kubectl exec -it <vllm-pod-name> -- \
-  python -m vllm.entrypoints.openai.bench_serving \
-    --backend openai \
-    --base-url http://localhost:8000 \
-    --model qwen \
-    --num-prompts 100 \
-    --request-rate 10
-```
 TTFT (Time to First Token), TPOT (Time per Output Token), Throughput (tokens/sec), Request Latency (p50/p99) 을 baseline 과 비교한다.
 TPOT와 Throughput에서 가장 큰 차이가 나타난다. 일반적으로 1.5~2.5배 속도 향상을 기대할 수 있으며, 코드 생성처럼 정형화된 출력에서 효과가 더 크다.
 num-speculative-tokens는 너무 높이면 draft 모델의 추측이 틀릴 확률이 올라가서 오히려 느려질수 있다. 5가 무난한 시작점이고, 벤치마크 결과 보면서 3~7 사이에서 조절한다.
-
 
 
 ## KV Cache / PagedAttention 튜닝 ##
@@ -369,3 +310,34 @@ vllm serve model \
   --max-num-batched-tokens 4096   # 한 iteration에 처리할 최대 토큰 수
   --enable-chunked-prefill        # 긴 prefill을 쪼개서 decode와 인터리빙
 ```
+
+
+## 기타 최적화 ##
+#### Prefill/Decode 분리 ####
+LLM 추론은 두 단계로 나뉜다.
+* Prefill: 입력 프롬프트의 모든 토큰을 한 번에 처리하여 KV Cache를 생성하는 단계. 행렬 연산이 크고 GPU 연산(compute)이 병목이다.
+* Decode: KV Cache를 참조하며 토큰을 하나씩 생성하는 단계. 연산량은 적지만 매 스텝마다 GPU 메모리를 읽어야 하므로 메모리 대역폭(memory bandwidth)이 병목이다.
+두 단계의 리소스 특성이 다르기 때문에, 같은 GPU에서 Prefill과 Decode가 섞이면 서로 간섭이 발생한다. 긴 프롬프트의 Prefill이 실행되면 Decode 중인 요청의 TPOT(Time per Output Token)이 튀는 현상이 생긴다. vLLM은 내부 스케줄러에서 Prefill과 Decode의 우선순위를 조절하여 이 간섭을 최소화한다.
+
+### Speculative Decoding 적용 ###
+Speculative Decoding은 작은 모델(draft)이 먼저 여러 토큰을 추측 생성하고, 큰 모델(target)이 한 번에 검증하는 방식으로 추론 속도를 높이는 방식이다.
+
+* Target 모델: Qwen2.5-27B (기존 배포 모델)
+* Draft 모델: Qwen2.5-3B (같은 계열의 작은 모델, 추측 적중률이 높음)
+기존 vllm-qwen.yaml 에서 args 부분만 수정한다.
+```
+args:
+  - "--model=Qwen/Qwen2.5-Coder-27B-Instruct"
+  - "--tensor-parallel-size=4"
+  - "--max-model-len=4096"
+  - "--gpu-memory-utilization=0.90"
+  - "--speculative-model=Qwen/Qwen2.5-Coder-3B-Instruct"
+  - "--num-speculative-tokens=5"
+```
+
+* 파라미터	설명
+ * --speculative-model	추측 생성에 사용할 draft 모델
+ * --num-speculative-tokens	draft 모델이 한 번에 추측할 토큰 수 (5가 일반적)
+draft 모델(3B)은 target 모델(27B)과 같은 GPU 메모리에 함께 로드된다. 3B 모델은 약 6GB 정도 차지하므로 L40S 48GB × 4 구성에서 메모리 여유가 충분하다.
+
+

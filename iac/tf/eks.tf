@@ -179,7 +179,17 @@ resource "aws_iam_policy" "karpenter" {
           "ec2:TerminateInstances",
           "iam:PassRole",
           "pricing:GetProducts",
-          "ssm:GetParameter"
+          "ssm:GetParameter",
+          # 추가
+          "ec2:DescribeSpotPriceHistory",
+          "iam:CreateInstanceProfile",
+          "iam:DeleteInstanceProfile",
+          "iam:GetInstanceProfile",
+          "iam:ListInstanceProfiles",
+          "iam:AddRoleToInstanceProfile",
+          "iam:RemoveRoleFromInstanceProfile",
+          "iam:TagInstanceProfile",
+          "eks:DescribeCluster"
         ],
         Resource = "*"
       }

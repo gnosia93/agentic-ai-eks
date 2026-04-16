@@ -57,10 +57,7 @@ kubectl version --client
 kubectl get pods -n karpenter -l app.kubernetes.io/name=karpenter
 kubectl get crd | grep karpenter
 
-kubectl get nodepools
-kubectl get ec2nodeclasses
-
-kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter --tail=50
+kubectl logs -n karpenter -l app.kubernetes.io/name=karpenter --tail=50
 ```
 test 파드 생성 테스트를 한다. 
 ```

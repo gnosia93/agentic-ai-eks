@@ -79,6 +79,27 @@ kubectl logs -f vllm-qwen-849cb97c7c-fcfnh
 * --gpu-memory-utilization    GPU 메모리 상용률(90% 권장)
    - CUDA 커널 실행 오버헤드, Activation 임시 버퍼, Tensor 연산 중간 결과물, NCCL 통신 버퍼 (TP 사용시)
 
+
+## 테스트 ##
+```
+kubectl port-forward svc/vllm-qwen-svc 8080:80 --address=0.0.0.0 &
+
+curl -s http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"qwen","messages":[{"role":"user","content":"Hello!"}],"max_tokens":50}'
+```
+
+
+
+
+
+
+
+
+
+
+
+----
 ### vLLM 추론 최적화 ###
 vLLM은 아래 세 가지 최적화를 기본 내장하고 있어 별도 설정 없이 자동 적용된다.
 

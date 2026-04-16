@@ -39,6 +39,7 @@ aws eks update-kubeconfig --name ${CLUSTER_NAME}
 ```
 
 ### 카펜터 설치 확인 ###
+본 워크샵에서는 테라폼 apply 시 eks 클러스터와 함께 카펜터가 자동으로 설치된다. 하지만 노드풀 및 ec2노드 클래스는 별도로 생성해야 한다. 
 ```
 kubectl get pods -n kube-system -l app.kubernetes.io/name=karpenter
 kubectl get crd | grep karpenter
@@ -48,7 +49,7 @@ kubectl get ec2nodeclasses
 
 kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter --tail=50
 ```
-test 파다를 하나 생성해 본다.
+test 파드 생성 테스트를 한다. 
 ```
 kubectl run test --image=nginx --restart=Never --overrides='{"spec":{"nodeSelector":{"karpenter.sh/nodepool":"default"}}}'
 

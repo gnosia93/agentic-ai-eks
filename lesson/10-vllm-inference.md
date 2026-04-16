@@ -88,9 +88,13 @@ kubectl port-forward svc/vllm-qwen-svc 8080:80 --address=0.0.0.0 &
 
 curl -s http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"model":"qwen","messages":[{"role":"user","content":"Hello!"}],"max_tokens":50}'
+  -d '{"model":"qwen","messages":[{"role":"user","content":"안녕!"}],"max_tokens":50}'
 ```
-
+[결과]
+```
+Handling connection for 8080
+{"id":"chatcmpl-9d34d7a96464f38f","object":"chat.completion","created":1776338760,"model":"qwen","choices":[{"index":0,"message":{"role":"assistant","content":"안녕하세요! 어떻게 도와드릴까요?","refusal":null,"annotations":null,"audio":null,"function_call":null,"tool_calls":[],"reasoning":null},"logprobs":null,"finish_reason":"stop","stop_reason":null,"token_ids":null}],"service_tier":null,"system_fingerprint":null,"usage":{"prompt_tokens":32,"total_tokens":44,"completion_tokens":12,"prompt_tokens_details":null},"prompt_logprobs":null,"prompt_token_ids":null,"kv_transfer_params":null}
+```
 
 
 

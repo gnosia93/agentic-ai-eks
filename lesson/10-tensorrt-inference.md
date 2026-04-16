@@ -6,14 +6,9 @@
 export CLUSTER_NAME=eks-agentic-ai
 export ENGINE_BUCKET=${CLUSTER_NAME}-tensorrt-llm-$(date +%Y%m%d%H%M)
 
-aws s3 mb s3://${ENGINE_BUCKET} --region ap-northeast-2
-
-eksctl create iamserviceaccount \
-  --name s3-access-sa \
-  --namespace default \
-  --cluster ${CLUSTER_NAME} \
-  --attach-policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
-  --approve
+kubectl create serviceaccount s3-access-sa -n default
+kubectl annotate serviceaccount s3-access-sa -n default \
+  eks.amazonaws.com/role-arn=arn:aws:iam::499514681453:role/eks-agentic-ai-s3-access
 
 curl -o trtllm-engine-build.yaml \
   https://raw.githubusercontent.com/gnosia93/eks-agentic-ai/refs/heads/main/code/yaml/trtllm-engine-build.yaml

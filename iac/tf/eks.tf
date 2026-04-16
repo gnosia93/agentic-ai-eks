@@ -40,13 +40,13 @@ resource "aws_eks_cluster" "main" {
 ### 추가 시작 ###
 resource "aws_eks_access_entry" "ec2_bastion" {
   cluster_name  = aws_eks_cluster.main.name
-  principal_arn = aws_iam_role.ec2_role.arn  # EC2에 붙인 IAM Role 참조
+  principal_arn = aws_iam_role.eks_creator_role.arn  # EC2에 붙인 IAM Role 참조
   type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "ec2_bastion_admin" {
   cluster_name  = aws_eks_cluster.main.name
-  principal_arn = aws_iam_role.ec2_role.arn
+  principal_arn = aws_iam_role.eks_creator_role.arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 
   access_scope {

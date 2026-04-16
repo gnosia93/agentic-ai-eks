@@ -26,21 +26,26 @@ spec:
             - |
               set -e
               pip install -U "huggingface_hub<1.0" awscli
-
+              
               echo "=== Downloading model ==="
               huggingface-cli download Qwen/Qwen2.5-72B-Instruct --local-dir /workspace/qwen-hf
 
-              echo "=== Building TRT-LLM engine ==="
-              python3 -m tensorrt_llm.commands.build \
+              echo "=== Converting checkpoint ==="
+              python3 examples/qwen/convert_checkpoint.py \
                 --model_dir /workspace/qwen-hf \
-                --output_dir /workspace/engines/qwen \
+                --output_dir /workspace/qwen-trtllm-ckpt \
                 --dtype bfloat16 \
-                --tp_size 4 \
+                --tp_size 4
+
+              echo "=== Building TRT-LLM engine ==="
+              trtllm-build \
+                --checkpoint_dir /workspace/qwen-trtllm-ckpt \
+                --output_dir /workspace/engines/qwen \
                 --max_input_len 4096 \
                 --max_seq_len 8192 \
                 --max_batch_size 64 \
-                --gemm_plugin bfloat16 \
-                --gpt_attention_plugin bfloat16
+                --gemm_plugin auto \
+                --gpt_attention_plugin auto
 
               echo "=== Uploading to S3 ==="
               aws s3 cp /workspace/engines/qwen/ s3://${ENGINE_BUCKET}/trtllm-engines/qwen/ --recursive

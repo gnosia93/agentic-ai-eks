@@ -16,8 +16,10 @@ kubectl annotate serviceaccount s3-access-sa -n default \
 
 트리톤 서버를 이용하여 Qwen 모델을 컴파일 한다.
 ```bash
+mkdir triton && cd triton
 curl -o trtllm-engine-build.yaml \
   https://raw.githubusercontent.com/gnosia93/eks-agentic-ai/refs/heads/main/code/yaml/trtllm-engine-build.yaml
+
 envsubst < trtllm-engine-build.yaml | kubectl apply -f -
 
 kubectl wait --for=condition=complete job/trtllm-engine-build --timeout=60m

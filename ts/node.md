@@ -5,7 +5,7 @@
 * kubelet 헬스체크 실패 — GPU 드라이버 문제나 메모리 부족으로 kubelet이 응답 못하는 경우
 * 노드 메모리(OOM) — 시스템 메모리가 부족하면 커널이 프로세스를 kill
 
-#### NotReady 됐을 때 원인을 확인하려면 ####
+#### 원인 파악 ####
 ```
 kubectl describe node <노드이름>
 ```

@@ -103,5 +103,17 @@ kubectl get pods -n gpu-operator
 kubectl get nodes -o json | jq '.items[].status.allocatable["nvidia.com/gpu"]'
 ```
 
+### EFA 설치 ###
+```
+helm repo add eks https://aws.github.io/eks-charts
+helm install aws-efa-k8s-device-plugin eks/aws-efa-k8s-device-plugin --namespace kube-system
+
+kubectl patch ds aws-efa-k8s-device-plugin -n kube-system --type='json' -p='[
+  {"op": "add", "path": "/spec/template/spec/tolerations/-", "value": {"operator": "Exists"}}
+]'
+
+kubectl get ds aws-efa-k8s-device-plugin -n kube-system
+```
+
 ### gpu 풀 생성 ###
 

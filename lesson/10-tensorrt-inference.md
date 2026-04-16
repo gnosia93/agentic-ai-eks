@@ -3,14 +3,15 @@
 
 모델을 컴파일 하여 S3 에 저장한다.
 ```bash
-# S3 버킷 생성
-export ENGINE_BUCKET=tensorrt-llm-$(date +%Y%m%d%H%M)
+export CLUSTER_NAME=eks-agentic-ai
+export ENGINE_BUCKET=${CLUSTER_NAME}-tensorrt-llm-$(date +%Y%m%d%H%M)
 
 aws s3 mb s3://${ENGINE_BUCKET} --region ap-northeast-2
+
 eksctl create iamserviceaccount \
   --name s3-access-sa \
   --namespace default \
-  --cluster <cluster-name> \
+  --cluster ${CLUSTER_NAME} \
   --attach-policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess \
   --approve
 

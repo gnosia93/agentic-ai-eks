@@ -1,6 +1,6 @@
 ## 추론 성능 비교 (versus vLLM) ##
 
-테스트 한다.
+포트 포워딩 설정한 후, 테스트 한다.
 ```
 kubectl port-forward svc/trtllm-qwen-svc 8000:80 & 
 

@@ -1,13 +1,18 @@
 ## 추론 성능 비교 (versus vLLM) ##
 
+python 3.12 로 된 conda 환경을 생성한다.
 ```
-python --version
-```
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
+conda create -n py312 python=3.12 -y
+conda activate py312
 
-```
 pip install genai-perf
+```
 
+테스트 한다.
+```
 genai-perf profile \
     --model qwen \
     --endpoint-type chat \

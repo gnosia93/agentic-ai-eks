@@ -41,18 +41,19 @@ spec:
       containers:
         - name: triton
           image: nvcr.io/nvidia/tritonserver:26.02-trtllm-python-py3
-          command: ["python3", "-m", "tensorrt_llm.commands.serve"]
+          command: ["/bin/bash", "-c"]
           args:
-            - --engine_dir=/engines/qwen
-            - --tokenizer_dir=/models/qwen-hf
-            - --host=0.0.0.0
-            - --port=8000
-            - --max_beam_width=1
+            - |
+            trtllm-serve serve /engines/qwen \
+              --tokenizer /models/qwen-hf \
+              --host 0.0.0.0 \
+              --port 8000 \
+              --tp_size 4 \
+              --max_beam_width 1 \
+              --backend tensorrt
           ports:
             - containerPort: 8000
               name: http
-            - containerPort: 8001
-              name: grpc
           resources:
             limits:
               nvidia.com/gpu: "4"

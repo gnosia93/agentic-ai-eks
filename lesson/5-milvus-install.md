@@ -1,4 +1,5 @@
 ### s3 버킷생성 ###
+milvus 용 데이터 저장 버킷을 생성한다.
 ```
 export CLUSTER_NAME=eks-agentic-ai
 export VECTORDB_BUCKET_NAME=${CLUSTER_NAME}-vectordb-milvus
@@ -7,9 +8,11 @@ aws s3 mb s3://${VECTORDB_BUCKET_NAME} --region ap-northeast-2
 ```
 
 ### milvus 설치 ###
+eks 클러스터에 milvus 를 설치한다.
 ```
 helm repo add milvus https://zilliz.github.io/milvus-helm/
 helm repo update
+
 helm install milvus milvus/milvus \
   --set cluster.enabled=false \
   --set externalS3.enabled=true \
@@ -17,6 +20,8 @@ helm install milvus milvus/milvus \
   --set externalS3.bucketName=${VECTORDB_BUCKET_NAME} \
   --set externalS3.useIAM=true \
   --set minio.enabled=false \
+  --set pulsar.enabled=false \
+  --set milvus.standalone.messageQueue=rocksmq \
   -n milvus --create-namespace
 ```
 

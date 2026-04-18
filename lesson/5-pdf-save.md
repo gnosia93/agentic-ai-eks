@@ -75,7 +75,7 @@ if __name__ == "__main__":
 ```
 curl -o LoRA_Low-Rank_Adaptation.pdf https://arxiv.org/pdf/2106.09685.pdf
 
-python main.py
+python main.py --host 10.0.0.5 pdfs/a.pdf /tmp/b.pdf ./c.pdf
 ```
 실행이 끝나면 다음과 같은 메시지가 출력된다.
 

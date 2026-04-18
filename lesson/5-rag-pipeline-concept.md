@@ -40,14 +40,14 @@
 * 긴 문서 다루면 8K 지원 모델 유리. 짧은 청크(300~500)만 쓸 거면 512로도 충분.
 
 #### 4. 비용 모델 ####
-API 기반:
+* API 기반:
 ```
 OpenAI text-embedding-3-small: $0.02 / 1M tokens
 OpenAI text-embedding-3-large: $0.13 / 1M tokens
 Cohere embed-v3:              $0.10 / 1M tokens
 Voyage AI:                    $0.12 / 1M tokens
 ```
-자체 호스팅 (오픈소스):
+* 자체 호스팅 (오픈소스):
 ```
 서버 비용 (GPU 인스턴스)
 BGE-M3, E5 등은 무료

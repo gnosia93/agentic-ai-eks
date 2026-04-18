@@ -4,15 +4,13 @@ from mcp.server.fastmcp import FastMCP
 from RAGSearch import RAGSearch
 
 
-# MCP 서버 초기화
 mcp = FastMCP("rag-search")
 
 
 @lru_cache(maxsize=1)
 def get_rag() -> RAGSearch:
-    """RAGSearch 싱글턴. 첫 호출 시에만 생성되며 thread-safe."""
     return RAGSearch(
-        host=os.getenv("MILVUS_HOST", "localhost"),
+        host=os.getenv("MILVUS_HOST", "milvus.milvus.svc.cluster.local"),
         port=os.getenv("MILVUS_PORT", "19530"),
         collection_name=os.getenv("MILVUS_COLLECTION", "papers"),
         bedrock_model_id=os.getenv(
@@ -25,18 +23,7 @@ def get_rag() -> RAGSearch:
 
 @mcp.tool()
 def search_papers(query: str, top_k: int = 20, top_n: int = 5) -> dict:
-    """
-    논문 벡터 DB(Milvus)에서 질의와 관련된 청크를 검색하고,
-    Bedrock LLM으로 근거 기반 답변을 생성합니다.
-
-    Args:
-        query: 검색할 자연어 질문
-        top_k: Milvus에서 가져올 후보 청크 수 (기본 20)
-        top_n: 재순위 후 LLM에 넘길 청크 수 (기본 5)
-
-    Returns:
-        answer, contexts(출처 문서명/페이지 포함)
-    """
+    """논문 벡터 DB에서 질의와 관련된 내용을 검색하고 LLM으로 답변 생성"""
     rag = get_rag()
     result = rag.query(query, top_k=top_k, top_n=top_n)
     contexts = [
@@ -53,10 +40,7 @@ def search_papers(query: str, top_k: int = 20, top_n: int = 5) -> dict:
 
 @mcp.tool()
 def retrieve_only(query: str, top_k: int = 10) -> list[dict]:
-    """
-    LLM 호출 없이 벡터 검색 + 재순위 결과만 반환합니다.
-    원문 확인이나 디버깅에 유용합니다.
-    """
+    """LLM 호출 없이 벡터 검색 + 재순위 결과만 반환"""
     rag = get_rag()
     hits = rag.retrieve(query, top_k=top_k)
     reranked = rag.rerank(query, hits, top_n=top_k)
@@ -72,6 +56,12 @@ def retrieve_only(query: str, top_k: int = 10) -> list[dict]:
     ]
 
 
+@mcp.tool()
+def health() -> dict:
+    """헬스체크용"""
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
-    # stdio 모드: MCP 클라이언트가 subprocess로 실행
-    mcp.run()
+    # SSE(HTTP) 모드로 실행. 0.0.0.0:8000에서 수신
+    mcp.run(transport="sse", host="0.0.0.0", port=8000)

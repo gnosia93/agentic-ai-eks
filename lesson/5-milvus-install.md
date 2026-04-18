@@ -65,7 +65,7 @@ helm upgrade --install milvus milvus/milvus \
 > helm uninstall milvus -n milvus
 > ```
 
-### milvus 설치 확인 ###
+### 3. milvus 설치 확인 ###
 ```
 kubectl get pods -n milvus
 ```

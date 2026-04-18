@@ -44,23 +44,32 @@ https://raw.githubusercontent.com/gnosia93/eks-agentic-ai/refs/heads/main/code/r
 
 ### 4. 실행 스크립트 작성 (main.py) ###
 ```
+import argparse
 from PDFVectorStore import PDFVectorStore
 
-store = PDFVectorStore(
-    host="<리모트_IP_또는_호스트>",
-    port="19530",
-    collection_name="papers",
-    reset=True,   # 기존 컬렉션을 초기화. 처음 한 번만 True로 두고 이후에는 False.
-)
+def main():
+    parser = argparse.ArgumentParser(description="PDF 문서를 Milvus에 저장합니다.")
+    parser.add_argument("--host", required=True, help="Milvus 호스트 (예: 10.0.0.5)")
+    parser.add_argument("--port", default="19530", help="Milvus 포트 (기본값: 19530)")
+    parser.add_argument("--collection", default="papers", help="컬렉션 이름 (기본값: papers)")
+    parser.add_argument("--reset", action="store_true", help="기존 컬렉션 삭제 후 새로 생성")
+    parser.add_argument("pdfs", nargs="+", help="저장할 PDF 파일 경로 (여러 개 가능)")
 
-store.add_pdf("LoRA_Low-Rank_Adaptation.pdf")
-# 문서를 추가로 저장하려면 같은 방식으로 호출
-# store.add_pdf("Attention_Is_All_You_Need.pdf")
+    args = parser.parse_args()
+
+    store = PDFVectorStore(
+        host=args.host,
+        port=args.port,
+        collection_name=args.collection,
+        reset=args.reset,
+    )
+
+    for pdf_path in args.pdfs:
+        store.add_pdf(pdf_path)
+
+if __name__ == "__main__":
+    main()
 ```
-주요 파라미터 설명:
-* host, port : 리모트에 떠 있는 Milvus 서버의 주소와 포트
-* collection_name : 문서들을 저장할 컬렉션 이름.
-* reset=True : 같은 이름의 컬렉션이 있으면 삭제하고 새로 만든다. 이미 저장된 데이터를 유지하면서 추가만 하고 싶다면 False로 설정한다.
 
 ### 5. 실행 ###
 ```

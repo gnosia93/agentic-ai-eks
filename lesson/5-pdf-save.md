@@ -40,21 +40,7 @@ https://raw.githubusercontent.com/gnosia93/eks-agentic-ai/refs/heads/main/code/r
 * BAAI/bge-m3 모델로 임베딩 (1,024차원, 다국어 지원)   
 * Milvus 컬렉션 스키마 자동 생성 및 IVF_FLAT + COSINE 인덱스 구성
 
-
-
-
-
-
-### 실행하기 ###
-```
-mkdir rag && cd rag
-pip install pymilvus langchain langchain-community pymupdf sentence-transformers
-
-curl -o PDFVectorStore.py
-https://raw.githubusercontent.com/gnosia93/eks-agentic-ai/refs/heads/main/code/rag/PDFVectorStore.py
-```
-
-[main.py]
+### 4. 실행 스크립트 작성 (main.py) ###
 ```
 from PDFVectorStore import PDFVectorStore
 
@@ -62,10 +48,15 @@ store = PDFVectorStore(
     host="<리모트_IP_또는_호스트>",
     port="19530",
     collection_name="papers",
-    reset=True,  # 처음 한 번만
+    reset=True,   # 기존 컬렉션을 초기화. 처음 한 번만 True로 두고 이후에는 False.
 )
 
 store.add_pdf("LoRA_Low-Rank_Adaptation.pdf")
-# 이후 다른 PDF도 계속
-# store.add_pdf("another.pdf")
+# 문서를 추가로 저장하려면 같은 방식으로 호출
+# store.add_pdf("Attention_Is_All_You_Need.pdf")
 ```
+주요 파라미터 설명:
+* host, port : 리모트에 떠 있는 Milvus 서버의 주소와 포트
+* collection_name : 문서들을 저장할 컬렉션 이름.
+* reset=True : 같은 이름의 컬렉션이 있으면 삭제하고 새로 만든다. 이미 저장된 데이터를 유지하면서 추가만 하고 싶다면 False로 설정한다.
+

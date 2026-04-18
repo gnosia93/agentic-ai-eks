@@ -2,7 +2,8 @@
 milvus 용 데이터 저장 버킷을 생성한다.
 ```
 export CLUSTER_NAME=eks-agentic-ai
-export VECTORDB_BUCKET_NAME=${CLUSTER_NAME}-vectordb-milvus
+export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export VECTORDB_BUCKET_NAME=${CLUSTER_NAME}-vectordb-milvus-${ACCOUNT_ID}
 
 aws s3 mb s3://${VECTORDB_BUCKET_NAME} --region ap-northeast-2
 ```

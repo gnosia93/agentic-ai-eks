@@ -1,3 +1,11 @@
+플로우
+```
+Query → Milvus 검색 (top 20) → Cohere Rerank (top 5) → Bedrock LLM
+```
+설치
+```
+pip install pymilvus boto3 sentence-transformers
+```
 
 * https://github.com/gnosia93/eks-agentic-ai/blob/main/code/rag/rag-pipeline.py
 ```

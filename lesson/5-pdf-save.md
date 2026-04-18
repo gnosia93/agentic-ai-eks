@@ -74,9 +74,11 @@ if __name__ == "__main__":
 
 ### 5. 실행 ###
 ```
+cat > download_pdfs.sh << 'EOF'
+#!/bin/bash
 mkdir -p pdfs
 
-declare -a papers=(
+papers=(
   "01_Attention_Is_All_You_Need:1706.03762"
   "02_LoRA_Low-Rank_Adaptation:2106.09685"
   "03_RAG:2005.11401"
@@ -98,6 +100,7 @@ done
 
 echo "Done!"
 ls -lh pdfs/
+EOF
 ```
 
 ```

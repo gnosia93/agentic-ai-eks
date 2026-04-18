@@ -29,7 +29,7 @@ Bedrock 호출에 필요한 boto3를 추가로 설치한다. 나머지 패키지
 pip install boto3
 ```
 
-### 3. RAGQuery 클래스 내려받기 ###
+### 3. RAGSearch 클래스 내려받기 ###
 미리 작성해 둔 클래스 파일을 가져온다.
 ```
 curl -o RAGSearch.py \

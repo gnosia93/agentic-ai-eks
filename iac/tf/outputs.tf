@@ -11,9 +11,10 @@ output "milvus_role_arn" {
 }
 
 output "vectordb_bucket_name" {
-  value       = aws_s3_bucket.milvus.id
+  value       = local.vectordb_bucket_name
   description = "Milvus S3 bucket name"
 }
+
 
 
 #output "eks_cluster_endpoint" {

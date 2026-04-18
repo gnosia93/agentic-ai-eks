@@ -44,11 +44,11 @@ ebs-csi-node-f46xd                    3/3     Running   0          3m26s
 
 #### 3. addon 확인 ###
 ```
-aws eks list-addons --cluster-name ${CLUSTER_NAME} --region ${AWS_REGION}
+aws eks list-addons --cluster-name ${CLUSTER_NAME} --region ${AWS_REGION} --output text
 ```
 [결과]
 ```
-
+ADDONS  aws-ebs-csi-driver
 ```
 
 ### milvus 설치 ###

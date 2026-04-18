@@ -8,3 +8,17 @@ curl -o PDFVectorStore.py
 https://raw.githubusercontent.com/gnosia93/eks-agentic-ai/refs/heads/main/code/rag/PDFVectorStore.py
 ```
 
+```
+from PDFVectorStore import PDFVectorStore
+
+store = PDFVectorStore(
+    host="<리모트_IP_또는_호스트>",
+    port="19530",
+    collection_name="papers",
+    reset=True,  # 처음 한 번만
+)
+
+store.add_pdf("LoRA_Low-Rank_Adaptation.pdf")
+# 이후 다른 PDF도 계속
+# store.add_pdf("another.pdf")
+```

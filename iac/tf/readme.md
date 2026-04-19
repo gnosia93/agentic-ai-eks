@@ -254,6 +254,15 @@ EOF
 ```
 kubectl get ec2nodeclass,nodepool
 ```
+[결과]
+```
+NAME                                 READY   AGE
+ec2nodeclass.karpenter.k8s.aws/gpu   True    19s
+
+NAME                        NODECLASS   NODES   READY   AGE
+nodepool.karpenter.sh/gpu   gpu         0       True    19s
+```
+
 > [!TIP]
 > 카펜터 로그 확인  
 > kubectl logs -n karpenter -l app.kubernetes.io/name=karpenter -f

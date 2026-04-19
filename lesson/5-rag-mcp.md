@@ -80,7 +80,7 @@ aws ecr get-login-password --region ${AWS_REGION} | \
 
 docker build -t rag-mcp:latest .
 docker tag rag-mcp:latest ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/rag-mcp:latest
-docker push ${ACCOUNT_ID}.dkr.ecr.us-west-2.amazonaws.com/rag-mcp:latest
+docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/rag-mcp:latest
 ```
 
 ### 4. EKS 배포 ###

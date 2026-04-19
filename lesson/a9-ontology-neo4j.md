@@ -10,16 +10,14 @@
 ```
 helm repo add neo4j https://helm.neo4j.com/neo4j
 helm repo update
-
-kubectl create namespace neo4j
 ```
-
+neo4j-values.yaml 파일을 생성한다.
 ```
 cat <<'EOF' > neo4j-values.yaml
 # neo4j-values.yaml
 neo4j:
   name: neo4j
-  edition: community              # 무료 버전
+  edition: community               # 무료 버전
   password: "neo4j-admin"          # 초기 비밀번호 (8자 이상 필수)
 
   resources:
@@ -42,4 +40,9 @@ services:
 nodeSelector:
   kubernetes.io/arch: arm64
 EOF
+```
+neo4j 를 설치한다.
+```
+helm install neo4j neo4j/neo4j -n neo4j \
+  -f neo4j-values.yaml --create-namespace
 ```

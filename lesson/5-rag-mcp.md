@@ -88,7 +88,8 @@ docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/rag-mcp:latest
 #### 4.1 Bedrock 접근 권한 (IRSA) ####
 
 `iam-policy.json`:
-```json
+```bash
+cat << 'EOF' > iam-policy.json
 {
   "Version": "2012-10-17",
   "Statement": [{
@@ -97,6 +98,7 @@ docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/rag-mcp:latest
     "Resource": "*"
   }]
 }
+EOF
 ```
 
 ```bash

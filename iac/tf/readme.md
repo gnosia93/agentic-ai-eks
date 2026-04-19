@@ -318,3 +318,61 @@ Thu Apr 16 09:19:26 2026
 |  No running processes found                                                             |
 +-----------------------------------------------------------------------------------------+
 ```
+#### eks node viewer ####
+시스템 노드그룹의 경우 그라비톤 c7g.xlarge 2대로 구성되어 있으며, 카펜터에 의해 GPU 노드가 프로비저닝 된 것을 확인할 수 있다. 
+![](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/images/eks-node-viewer.png)
+
+* 노드 리스트 출력
+```
+kubectl get nodes -L kubernetes.io/arch
+```
+[결과]
+```
+NAME                                             STATUS   ROLES    AGE    VERSION               ARCH
+ip-10-0-10-104.ap-northeast-2.compute.internal   Ready    <none>   48m    v1.34.6-eks-bbe087e   arm64
+ip-10-0-10-64.ap-northeast-2.compute.internal    Ready    <none>   7m8s   v1.34.6-eks-bbe087e   amd64
+ip-10-0-11-210.ap-northeast-2.compute.internal   Ready    <none>   48m    v1.34.6-eks-bbe087e   arm64
+```
+
+* kube-system 네임스페이스 조회 
+```
+kubectl get pods -n kube-system
+```
+[결과]
+```
+NAME                                  READY   STATUS    RESTARTS   AGE
+aws-node-62qp9                        2/2     Running   0          48m
+aws-node-7r2tf                        2/2     Running   0          7m26s
+aws-node-mbpkh                        2/2     Running   0          48m
+coredns-cc56d5f8b-lnwss               1/1     Running   0          51m
+coredns-cc56d5f8b-pdsbj               1/1     Running   0          51m
+ebs-csi-controller-85fd97c85b-4xbpr   6/6     Running   0          47m
+ebs-csi-controller-85fd97c85b-l5qsd   6/6     Running   0          47m
+ebs-csi-node-5swz5                    3/3     Running   0          47m
+ebs-csi-node-h9c72                    3/3     Running   0          7m26s
+ebs-csi-node-w9tpg                    3/3     Running   0          47m
+kube-proxy-2f4j9                      1/1     Running   0          7m26s
+kube-proxy-lwch2                      1/1     Running   0          48m
+kube-proxy-zr924                      1/1     Running   0          48m
+metrics-server-7cfb66fcc-rtqtr        1/1     Running   0          11m
+```
+
+* gpu-operator 출력
+```
+kubectl get pod -n gpu-operator
+```
+[결과]
+```
+NAME                                                          READY   STATUS      RESTARTS   AGE
+gpu-feature-discovery-dx946                                   1/1     Running     0          7m26s
+gpu-operator-69b958b7fc-pbwsh                                 1/1     Running     0          11m
+gpu-operator-node-feature-discovery-gc-8fb8d5d8d-cr7n9        1/1     Running     0          11m
+gpu-operator-node-feature-discovery-master-5bbc6d887b-rrbsh   1/1     Running     0          11m
+gpu-operator-node-feature-discovery-worker-7dvxv              1/1     Running     0          7m35s
+gpu-operator-node-feature-discovery-worker-cbqt7              1/1     Running     0          11m
+gpu-operator-node-feature-discovery-worker-vg57z              1/1     Running     0          11m
+nvidia-cuda-validator-j458d                                   0/1     Completed   0          7m10s
+nvidia-dcgm-exporter-4fk7c                                    1/1     Running     0          7m27s
+nvidia-device-plugin-daemonset-nt2l4                          1/1     Running     0          7m28s
+nvidia-operator-validator-8f4gx                               1/1     Running     0          7m29s
+```

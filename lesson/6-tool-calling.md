@@ -1,4 +1,4 @@
-## FastAPI + LangGraph ##
+## LangGraph ##
 ```
 import json
 import time

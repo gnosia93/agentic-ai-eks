@@ -13,8 +13,8 @@ LangGraph Agent (워크플로우)
   ├─ Tool: ...
   └─ Bedrock (LLM)
 ```
-Open WebUI는 백엔드가 OpenAI API 호환 스펙만 지키면 무엇이든 통합할 수 있다.
-* FastAPI가 POST /v1/chat/completions 엔드포인트를 가지고
-* 요청 받아 LangGraph 에이전트 실행
-* 결과를 OpenAI 응답 포맷으로 감싸서 반환
+#### 필수 구현해야 할 3개 엔드포인트 ####
+* GET  /v1/models              → 사용 가능한 모델 목록
+* POST /v1/chat/completions    → 실제 채팅 (stream / non-stream 모두)
+* GET  /health                 → 헬스체크 (선택이지만 권장)
 

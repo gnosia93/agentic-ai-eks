@@ -40,6 +40,9 @@ persistence:
 
 service:
   type: LoadBalancer        # 외부 노출 
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
   port: 80
 
 resources:

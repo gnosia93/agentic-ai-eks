@@ -32,7 +32,8 @@ boto3
 ```
 
 `Dockerfile`:
-```dockerfile
+```bash
+cat << 'EOF' > Dockerfile
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -53,9 +54,9 @@ COPY RAGSearch.py rag_mcp_server.py ./
 
 EXPOSE 8000
 CMD ["python", "rag_mcp_server.py"]
+EOF
 ```
-
-> 이미지 크기가 크다(모델 2개 약 4GB). 프로덕션에서는 PVC로 모델을 분리하는 방법도 있다.
+도커 이미지 크기가 좀 크다(모델 2개 약 4GB). 프로덕션에서는 PVC로 모델을 분리하는 방법도 있다.
 
 ### 3. ECR 푸시 ###
 

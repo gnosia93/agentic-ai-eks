@@ -127,22 +127,47 @@ sleep 3   # 포트 포워딩 준비 대기
 export MILVUS_DB_IP=localhost
 python query.py --host ${MILVUS_DB_IP} \
   "LoRA에서 low-rank adaptation이 왜 효과적인가?"
-
-kill $PF_PID
 ```
-실행이 끝나면 답변과 함께 근거로 사용된 문서/페이지가 함께 출력된다.
+[결과]
 ```
+Handling connection for 19530
+I0419 04:52:45.708652  116637 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+I0419 04:52:45.745248  116637 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+I0419 04:52:45.779831  116637 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+I0419 04:52:45.836325  116637 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights: 100%|███████████████████████████████████████████████████████████████████████████| 391/391 [00:00<00:00, 44466.61it/s]
+Loading weights: 100%|████████████████████████████████████████████████████████████████████████████| 393/393 [00:00<00:00, 7932.71it/s]
 ============================================================
 Q: LoRA에서 low-rank adaptation이 왜 효과적인가?
 ============================================================
-LoRA는 사전학습 모델의 가중치 업데이트(ΔW)가 실제로는 낮은 내재 차원을
-가진다는 관찰에 기반합니다. ΔW = BA 형태로 저차원 행렬 두 개로 분해해
-학습 파라미터를 크게 줄이면서도 풀 파인튜닝에 준하는 성능을 낸다.
-...
-참조: 02_LoRA_Low-Rank_Adaptation p.2, p.4
+컨텍스트에 따르면, LoRA의 low-rank adaptation이 효과적인 이유는 다음과 같습니다:
+
+1. 이론적 근거: 학습된 과대 매개변수화(over-parametrized) 모델들이 실제로는 낮은 내재적 차원(low intrinsic dimension)에 존재한다는 것이 밝혀졌습니다. 이를 통해 모델 적응 과정에서의 가중치 변화도 낮은 "내재적 순위(intrinsic rank)"를 가질 것이라는 가설이 제시되었습니다.
+
+2. 실제 적용 사례: GPT-3 175B의 경우, 전체 순위(full rank)가 12,288로 매우 높음에도 불구하고 매우 낮은 순위(r=1 또는 2)만으로도 충분한 성능을 보였습니다.
+
+3. 중요 특징 강화: low-rank adaptation 행렬은 사전 학습 모델에서 학습되었지만 충분히 강조되지 않았던 특정 downstream 작업에 중요한 특징들을 잠재적으로 증폭시키는 효과가 있습니다.
+
+참조:
+- 02_LoRA_Low-Rank_Adaptation p.1
+- 02_LoRA_Low-Rank_Adaptation p.11
+
 ------------------------------------------------------------
 참조한 컨텍스트:
-  1. [02_LoRA_Low-Rank_Adaptation p.1] sim=0.812 rerank=0.934
-  ...
+  1. [02_LoRA_Low-Rank_Adaptation p.1] sim=0.689 rerank=0.983
+  2. [02_LoRA_Low-Rank_Adaptation p.1] sim=0.690 rerank=0.973
+  3. [02_LoRA_Low-Rank_Adaptation p.0] sim=0.695 rerank=0.969
+  4. [02_LoRA_Low-Rank_Adaptation p.11] sim=0.691 rerank=0.957
+  5. [02_LoRA_Low-Rank_Adaptation p.8] sim=0.677 rerank=0.946
 ```
 
+포트 포워딩 설정을 삭제한다.
+```
+kill $PF_PID
+```
+
+> [!INFORMATION]
+> 본 워크샵에서는 RAG 검색을 위한 임베딩과 검색 결과에 대한 리랭킹 작업을 vscode 로컬 서버에서 CPU 를 활용하여 실행한다. 
+> 실제 운영 환경에서는 SSAS API 를 활용하거나 GPU 를 탑재한 remote API 서버를 구현하여, 해당 작업을 수행해야 한다.
+>  

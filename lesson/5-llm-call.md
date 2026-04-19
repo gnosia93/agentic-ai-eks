@@ -168,6 +168,5 @@ kill $PF_PID
 ```
 
 > [!TIP]
-> 본 워크샵에서는 RAG 검색을 위한 임베딩과 검색 결과에 대한 리랭킹 작업을 vscode 로컬 서버에서 CPU 를 활용하여 실행한다. 
-> 실제 운영 환경에서는 SSAS API 를 활용하거나 GPU 를 탑재한 remote API 서버를 구현하여, 해당 작업을 수행해야 한다.
+> 본 워크샵에서는 RAG 검색을 위한 임베딩과 검색 결과에 대한 리랭킹 작업을 로컬 VSCode 서버의 CPU에서 실행한다. 실제 운영 환경에서는 SaaS API(예: OpenAI, Cohere, Bedrock Embedding)를 활용하거나, GPU를 탑재한 원격 추론 서버(예: EKS GPU 노드 + vLLM/Triton)를 별도로 구성해 해당 작업을 처리해야 한다.
 >  

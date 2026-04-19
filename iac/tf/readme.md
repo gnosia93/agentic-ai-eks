@@ -152,6 +152,19 @@ NAME:.metadata.name,\
 TYPE:.metadata.labels.'node\.kubernetes\.io/instance-type',\
 GPU:.status.allocatable.'nvidia\.com/gpu'
 ```
+[결과]
+```
+NAME                                                          READY   STATUS    RESTARTS   AGE
+gpu-operator-69b958b7fc-pbwsh                                 1/1     Running   0          41s
+gpu-operator-node-feature-discovery-gc-8fb8d5d8d-cr7n9        1/1     Running   0          41s
+gpu-operator-node-feature-discovery-master-5bbc6d887b-rrbsh   1/1     Running   0          41s
+gpu-operator-node-feature-discovery-worker-cbqt7              1/1     Running   0          41s
+gpu-operator-node-feature-discovery-worker-vg57z              1/1     Running   0          41s
+
+NAME                                             TYPE         GPU
+ip-10-0-10-104.ap-northeast-2.compute.internal   c7g.xlarge   <none>
+ip-10-0-11-210.ap-northeast-2.compute.internal   c7g.xlarge   <none>
+```
 
 ### EFA 설치 ###
 ```

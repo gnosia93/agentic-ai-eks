@@ -107,7 +107,7 @@ echo "Done!"
 ls -lh pdfs/
 EOF
 ```
-pdf 들을 다운로드 한다.
+pdf 문서를 다운로드 한다.
 ```
 bash download_pdfs.sh 
 ```
@@ -241,8 +241,6 @@ LoRA can reduce the number of trainable p...
 ```
 kill $PF_PID
 ```
-
-
 
 ## 참고 - [BAAI/bge-m3](https://arxiv.org/pdf/2402.03216) ##
 BAAI(베이징 지능연구원)가 2024년 공개한 오픈소스 다국어 임베딩 모델. 이름의 "M3"는 세 가지 M을 뜻한다.

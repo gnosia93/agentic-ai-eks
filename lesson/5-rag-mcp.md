@@ -150,7 +150,7 @@ spec:
             - name: MILVUS_COLLECTION
               value: "papers"
             - name: AWS_REGION
-              value: "us-west-2"
+              value: "${AWS_REGION}"
             - name: BEDROCK_MODEL_ID
               value: "apac.anthropic.claude-3-5-sonnet-20241022-v2:0"
           resources:

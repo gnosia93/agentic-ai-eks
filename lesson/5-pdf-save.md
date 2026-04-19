@@ -123,7 +123,33 @@ sleep 3   # 포트 포워딩 준비 대기
 
 export MILVUS_DB_IP=localhost
 python main.py --host ${MILVUS_DB_IP} --reset pdfs/*.pdf
-
+```
+[결과]
+```
+Handling connection for 19530
+I0419 03:37:26.800686   39780 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+I0419 03:37:26.831408   39780 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+I0419 03:37:26.854061   39780 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+I0419 03:37:26.874887   39780 fork_posix.cc:71] Other threads are currently calling into gRPC, skipping fork() handlers
+modules.json: 100%|██████████████████████████████████████████████████████████████████████████████████| 349/349 [00:00<00:00, 1.94MB/s]
+config_sentence_transformers.json: 100%|█████████████████████████████████████████████████████████████| 123/123 [00:00<00:00, 1.19MB/s]
+README.md: 15.8kB [00:00, 47.2MB/s]
+sentence_bert_config.json: 100%|████████████████████████████████████████████████████████████████████| 54.0/54.0 [00:00<00:00, 561kB/s]
+config.json: 100%|███████████████████████████████████████████████████████████████████████████████████| 687/687 [00:00<00:00, 5.26MB/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+pytorch_model.bin: 100%|██████████████████████████████████████████████████████████████████████████| 2.27G/2.27G [00:18<00:00, 122MB/s]
+Loading weights: 100%|███████████████████████████████████████████████████████████████████████████| 391/391 [00:00<00:00, 32958.98it/s]
+tokenizer_config.json: 100%|█████████████████████████████████████████████████████████████████████████| 444/444 [00:00<00:00, 4.02MB/s]
+sentencepiece.bpe.model: 100%|███████████████████████████████████████████████████████████████████| 5.07M/5.07M [00:00<00:00, 12.4MB/s]
+tokenizer.json: 100%|████████████████████████████████████████████████████████████████████████████| 17.1M/17.1M [00:00<00:00, 41.8MB/s]
+special_tokens_map.json: 100%|███████████████████████████████████████████████████████████████████████| 964/964 [00:00<00:00, 4.58MB/s]
+config.json: 100%|███████████████████████████████████████████████████████████████████████████████████| 191/191 [00:00<00:00, 1.76MB/s]
+model.safetensors: 100%|██████████████████████████████████████████████████████████████████████████| 2.27G/2.27G [00:18<00:00, 122MB/s]
+[01_Attention_Is_All_You_Need] inserted 49 chunks
+...
+```
+포트 포워딩을 종료한다. 
+```
 kill $PF_PID
 ```
 

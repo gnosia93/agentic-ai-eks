@@ -100,6 +100,17 @@ run_eval() {
   local model="$1"
   local name="$2"
   local manifest="vllm-eval-${name}.yaml"
+  local pf_pid=""
+
+  # 함수 빠져나갈 때 port-forward 무조건 정리
+  cleanup_pf() {
+    if [[ -n "$pf_pid" ]]; then
+      kill "$pf_pid" 2>/dev/null || true
+      wait "$pf_pid" 2>/dev/null || true
+      pf_pid=""
+    fi
+  }
+  trap cleanup_pf RETURN
 
   echo "=== [$(date +%T)] $model ==="
 
@@ -108,7 +119,7 @@ run_eval() {
   envsubst < vllm-eval.yaml > "$manifest"
   kubectl apply -f "$manifest"
 
-  # 2. Ready 대기 (실패 시 로그 남기고 정리)
+  # 2. Ready 대기
   if ! kubectl -n llm-eval rollout status deploy/vllm-eval --timeout=600s; then
     echo "!! rollout failed for $model"
     kubectl -n llm-eval logs deploy/vllm-eval --tail=100 || true
@@ -116,24 +127,22 @@ run_eval() {
     return 1
   fi
 
-  # 3. lm-eval-harness 실행
-  kubectl -n llm-eval port-forward svc/vllm-eval 8000:8000 &
-  PF_PID=$!
+  # 3. port-forward 기동
+  kubectl -n llm-eval port-forward svc/vllm-eval 8000:8000 >/dev/null 2>&1 &
+  pf_pid=$!
   sleep 3
 
+  # 4. lm-eval-harness 실행 (localhost로)
   lm_eval \
     --model local-chat-completions \
-    --model_args "model=${model},base_url=http://vllm-eval.llm-eval:8000/v1/chat/completions" \
+    --model_args "model=${model},base_url=http://localhost:8000/v1/chat/completions" \
     --tasks mmlu,arc_challenge,hellaswag \
     --output_path "results/${name}"
 
-  # 4. 도메인 평가
+  # 5. 도메인 평가
   python scripts/domain_eval.py --model "$name"
 
-  kill "$PF_PID" 2>/dev/null || true
-  wait "$PF_PID" 2>/dev/null || true
-
-  # 5. vLLM 정리
+  # 6. vLLM 정리 (port-forward는 trap이 처리)
   kubectl delete -f "$manifest" --ignore-not-found
 }
 
@@ -146,54 +155,6 @@ for MODEL in "${MODELS[@]}"; do
 done
 
 echo "=== all evaluations complete ==="
-```
-
-
-
-```
-
-
-# 다른 터미널
-curl http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "Qwen/Qwen2.5-7B-Instruct",
-    "messages": [{"role": "user", "content": "안녕?"}],
-    "max_tokens": 50
-  }'
-```
-
-
-## Bedrock 모델 ##
-
-IRSA로 평가 Pod에 권한 부여:
-```
-cat > bedrock-eval-policy.json <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": [
-      "bedrock:InvokeModel",
-      "bedrock:InvokeModelWithResponseStream",
-      "bedrock:Converse",
-      "bedrock:ConverseStream"
-    ],
-    "Resource": "*"
-  }]
-}
-EOF
-
-aws iam create-policy \
-  --policy-name LLMEvalBedrockAccess \
-  --policy-document file://bedrock-eval-policy.json
-
-eksctl create iamserviceaccount \
-  --cluster=$CLUSTER_NAME \
-  --namespace=llm-eval \
-  --name=llm-eval-sa \
-  --attach-policy-arn=arn:aws:iam::${ACCOUNT_ID}:policy/LLMEvalBedrockAccess \
-  --approve
 ```
 
 

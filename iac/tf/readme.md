@@ -258,7 +258,7 @@ EOF
 > eks-agentic-ai-karpenter-controller — Karpenter 컨트롤러 Pod가 사용하는 Role (IRSA). EC2 인스턴스 생성/삭제, 서브넷/보안그룹 조회 등 Karpenter가 노드를 프로비저닝하기 위한 권한  
 >
 
-생성된 노드풀과 ec2 노드클래스가 True 상태인지를 확인한다.
+생성된 노드풀과 ec2 노드클래스가 True 상태인지를 확인한다. (False -> True 로 변경되는데 약 20초 정도의 시간 소요) 
 ```
 kubectl get ec2nodeclass,nodepool
 ```

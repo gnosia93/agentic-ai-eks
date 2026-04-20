@@ -30,43 +30,97 @@
 한 judge가 여러 기준을 동시에 채점하기보단, 기준별로 나눠 호출하거나 각 기준의 점수를 JSON으로 구조화하는 것이 좋다.
 
 
+### 3. 샘플 코드 ###
 ```
+import json
+import re
 from openai import OpenAI
 
 client = OpenAI(base_url="http://localhost:8000/v1", api_key="dummy")
+MODEL = "Qwen/Qwen2.5-32B-Instruct"  # 실제 서빙 중인 모델명으로
 
-def llm_judge(question, answer, criteria="정확성, 완전성, 실용성"):
-    response = client.chat.completions.create(
-        model="Qwen/Qwen3.5-27B",
+SYSTEM_PROMPT = """당신은 AI 응답 품질 평가 전문가입니다.
+- 점수는 엄격하게 매기세요. 모든 항목에 만점을 주는 경향을 피하세요.
+- 답변의 길이가 아닌 내용의 질을 평가하세요.
+- 반드시 지정된 JSON 형식만 출력하세요."""
+
+USER_TEMPLATE = """다음 답변을 평가하세요.
+
+[질문]
+{question}
+
+[답변]
+{answer}
+
+[평가 기준]
+- 정확성(correctness): 사실 오류가 없는가
+- 완전성(completeness): 핵심 내용이 빠짐없이 포함됐는가
+- 실용성(practicality): 질문자가 실제로 활용할 수 있는 정보인가
+
+각 기준을 1~5점으로 평가하세요.
+출력은 반드시 아래 JSON 스키마만 따르세요. 다른 텍스트 금지.
+
+{{
+  "correctness": {{"reason": "<간결한 근거>", "score": <1-5>}},
+  "completeness": {{"reason": "<간결한 근거>", "score": <1-5>}},
+  "practicality": {{"reason": "<간결한 근거>", "score": <1-5>}},
+  "overall": <1-5 평균 또는 종합>
+}}"""
+
+
+def _extract_json(text: str) -> dict:
+    """코드펜스나 앞뒤 잡음이 있어도 JSON만 뽑아서 파싱."""
+    # ```json ... ``` 제거
+    text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.MULTILINE)
+    # 가장 바깥 중괄호 영역만 추출 (보수적)
+    match = re.search(r"\{.*\}", text, flags=re.DOTALL)
+    if not match:
+        raise ValueError(f"No JSON found in: {text[:200]}")
+    return json.loads(match.group(0))
+
+
+def llm_judge(question: str, answer: str) -> dict:
+    resp = client.chat.completions.create(
+        model=MODEL,
         messages=[
-            {"role": "system", "content": "당신은 AI 응답 품질 평가 전문가입니다."},
-            {"role": "user", "content": f"""
-다음 답변을 평가하세요.
-
-[질문] {question}
-[답변] {answer}
-[평가 기준] {criteria}
-
-각 기준별 1~5점과 이유를 JSON으로 출력:
-{{"정확성": {{"score": N, "reason": "..."}}, "완전성": {{"score": N, "reason": "..."}}, "실용성": {{"score": N, "reason": "..."}}}}
-"""}
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": USER_TEMPLATE.format(
+                question=question, answer=answer
+            )},
         ],
-        temperature=0
+        temperature=0,
+        max_tokens=600,
+        # vLLM 최신 버전이면 JSON 모드 사용
+        response_format={"type": "json_object"},
     )
-    return response.choices[0].message.content
+    content = resp.choices[0].message.content
+    return _extract_json(content)
 
-# 사용
-result = llm_judge(
-    question="EFA와 일반 네트워크의 차이점은?",
-    answer="EFA는 OS bypass로 저지연 통신을 제공합니다."
-)
-print(result)
+
+if __name__ == "__main__":
+    result = llm_judge(
+        question="EFA와 일반 네트워크의 차이점은?",
+        answer="EFA는 OS bypass로 저지연 통신을 제공합니다.",
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
 ```
 * 평가 LLM은 평가 대상 모델보다 같거나 더 강한 모델을 써야 한다. (보통 GPT-4, Claude 등)
 * 자기 자신을 평가하면 자기 편향(self-bias)이 생김
 * Pairwise에서 답변 순서를 바꿔서 2번 평가하면 위치 편향(position bias)을 줄일 수 있음
-  
+
+
+### 4. 사용 가능한 도구 ###
 프로덕션에서는 사용자 요청과 LLM 응답을 로깅하고, 로그중 일부를 샘플링하여 비동기로 백그라운드에서 LLM Judge를 돌리고, 결과를 Prometheus 메트릭으로 수집하는 방식으로 운영.
-* 도구: MT-Bench, AlpacaEval, G-Eval, 직접 구현
-* 방식: Single Rating, Pairwise Comparison, Reference-based
+
+* Ragas: RAG 전용 메트릭(faithfulness, answer_relevancy, context_precision 등). Python.
+* DeepEval: pytest-like 인터페이스, G-Eval 구현 포함.
+* OpenAI Evals / promptfoo: 시나리오 기반 회귀 테스트.
+* LangSmith / Langfuse / Arize Phoenix: 트레이싱 + 평가 통합, 대시보드 제공.
+* MT-Bench / AlpacaEval: 사전 정의된 벤치마크 + judge 프롬프트 템플릿.
+
+
+
+
+
+
 

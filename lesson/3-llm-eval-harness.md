@@ -49,7 +49,7 @@ eksctl create iamserviceaccount \
 
 ## 오픈소스 모델 ##
 
-### 1. HuggingFace 토큰 (게이트 모델용) ###
+### 1. HuggingFace 토큰 ###
 Llama, Gemma 등 승인 필요한 모델은 HF 토큰 시크릿으로 제공:
 ```
 kubectl create secret generic hf-token \
@@ -57,7 +57,7 @@ kubectl create secret generic hf-token \
   --from-literal=token=$HF_TOKEN
 ```
 
-### 2. 테스트 자동화 ###
+### 2. 모델 테스트 ###
 ```
 #!/bin/bash
 # eval-all.sh
@@ -68,27 +68,26 @@ MODELS=(
   "google/gemma-2-9b-it"
 )
 
-# 1. deployment.yaml 다운로드
+# deployment.yaml 다운로드
 
 for MODEL in "${MODELS[@]}"; do
   NAME=$(echo $MODEL | tr '/' '-' | tr '[:upper:]' '[:lower:]')
   echo "=== $MODEL ==="
 
+  # 1. vLLM 기동
   envsubst < vllm-l40s.yaml | kubectl apply -f -
 
   # 2. Ready 될 때까지 대기
   kubectl -n llm-eval rollout status deploy/vllm-current --timeout=600s
 
   # 3. 평가 실행 (CPU Pod에서)
-  kubectl -n llm-eval exec eval-runner -- \
-    lm_eval --model local-chat-completions \
-      --model_args model=$MODEL,base_url=http://vllm-current:8000/v1/chat/completions \
-      --tasks mmlu,arc_challenge,hellaswag \
-      --output_path /results/$NAME
+  lm_eval --model local-chat-completions \
+    --model_args model=$MODEL,base_url=http://vllm-current:8000/v1/chat/completions \
+    --tasks mmlu,arc_challenge,hellaswag \
+    --output_path /results/$NAME
 
   # 4. 다른 평가들도 실행
-  kubectl -n llm-eval exec eval-runner -- \
-    python /scripts/domain_eval.py --model $NAME
+  python /scripts/domain_eval.py --model $NAME
 
   # 5. vLLM 내림
   kubectl -n llm-eval delete deploy vllm-current

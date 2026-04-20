@@ -55,37 +55,37 @@ aws ec2 run-instances --image-id ${AMI_ID} \
 ```
 
 ### 주피터 노트북 실행하기 ###
+ssh 로 로그인 한 후 아래 명령어를 실행하고, 웹 브라우저를 이용하여 해당 서버의 8080 포트로 접속한다. 
 ```
 jupyter lab --ip=0.0.0.0 --port=8080 --no-browser --NotebookApp.token='' --NotebookApp.password=''
 ```
 ![](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/images/jupyter-notebook.png)
 
 
-### 참고 - PC 의 VS CODE 설정 ###
-이 방식은 로컬 PC 의 vs code 에서 리모트에 있는 vscode 서버로 ssh 로 접속하여 주피터 노트북을 실행하는 방법이다.
-```
-~/.ssh/config 파일에 추가:
+### PC 의 VS-CODE 설정 ###
+이 방식은 로컬 PC 의 vs-code IDE 에서 리모트 서버로 ssh 로 접속하여 주피터 노트북을 실행하는 방법이다.
 
+`~/.ssh/config 파일에 추가`:
+```
 Host gpu-dev
-  HostName 43.203.228.244
+  HostName <EC2-IP>
   User ubuntu
   IdentityFile ~/aws-kp2.pem
-그 다음:
+```
 
-Ctrl+Shift+P → "Remote-SSH: Connect to Host" → gpu-dev 선택
-```
-```
-1. VS Code에서 Jupyter 확장 설치
+1. `Ctrl+Shift+P → "Remote-SSH: Connect to Host" → gpu-dev 선택`
+
+2. `VS Code에서 Jupyter 확장 설치`
    Extensions 탭 → "Jupyter" 검색 → Install in SSH
 
-2. 노트북 파일 생성
+3. `노트북 파일 생성`
    Ctrl+Shift+P → "Create: New Jupyter Notebook"
    또는 파일 탐색기에서 test.ipynb 생성
 
-3. 커널 선택
+4. `커널 선택`
    우측 상단 "Select Kernel" 클릭
    → "Python Environments" → gpu-dev (~/gpu-dev/bin/python)
 
-4. GPU 및 CUDA 버전 등을 확인한다. 
-```
+5. `GPU 및 CUDA 버전 등을 확인` 
+
 ![](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/images/vscode-jupyter-2.png)

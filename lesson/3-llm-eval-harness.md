@@ -128,8 +128,49 @@ curl http://localhost:8000/v1/chat/completions \
 ```
 
 ### 4. 테스트 ###
+
+테스트 파드 생성
+```
+# lm-eval-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lm-eval
+  namespace: llm-eval
+spec:
+  serviceAccountName: llm-eval-sa
+  restartPolicy: Never
+  nodeSelector:
+    nvidia.com/gpu.product: NVIDIA-A10G
+  containers:
+    - name: eval
+      image: python:3.11
+      command: ["/bin/bash", "-c", "sleep infinity"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+      env:
+        - name: HF_HOME
+          value: /cache/hf
+      volumeMounts:
+        - name: cache
+          mountPath: /cache/hf
+  volumes:
+    - name: cache
+      emptyDir:
+        sizeLimit: 50Gi
 ```
 
+### 모델 평가 (vLLM 서버 대상) ###
 ```
+kubectl -n llm-eval exec -it lm-eval -- bash
+pip install lm-eval[openai]
 
+# vLLM 서버를 OpenAI 호환으로 평가
+lm_eval \
+  --model local-chat-completions \
+  --model_args model=Qwen/Qwen2.5-7B-Instruct,base_url=http://vllm-qwen25-7b:8000/v1/chat/completions \
+  --tasks mmlu,arc_challenge,hellaswag,truthfulqa_mc2 \
+  --output_path /cache/results/qwen25-7b
+```
 

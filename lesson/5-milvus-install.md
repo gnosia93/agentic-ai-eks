@@ -65,7 +65,18 @@ helm upgrade --install milvus milvus/milvus \
   --set externalS3.useSSL=true \
   --set serviceAccount.create=true \
   --set serviceAccount.name=milvus-sa \
-  --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=${MILVUS_ROLE_ARN}
+  --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=${MILVUS_ROLE_ARN} \
+  \
+  --set standalone.nodeSelector.workload=agent \
+  --set standalone.tolerations[0].key=dedicated \
+  --set standalone.tolerations[0].operator=Equal \
+  --set standalone.tolerations[0].value=agent \
+  --set standalone.tolerations[0].effect=NoSchedule \
+  --set etcd.nodeSelector.workload=agent \
+  --set etcd.tolerations[0].key=dedicated \
+  --set etcd.tolerations[0].operator=Equal \
+  --set etcd.tolerations[0].value=agent \
+  --set etcd.tolerations[0].effect=NoSchedule
 ```
 
 > [!TIP]

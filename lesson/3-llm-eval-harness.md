@@ -194,6 +194,44 @@ done
 ![](https://github.com/gnosia93/agentic-ai-eks/blob/main/lesson/images/qwen-ppl.png)
 * https://github.com/gnosia93/agentic-ai-eks/blob/main/code/qwen_ppl.py 
 
+## 참고 - Perplexity(PPL) ##
+언어모델이 다음 토큰을 얼마나 잘 예측하는지 측정하는 지표라, "자연스러운 텍스트 코퍼스" 하나에 대해 쭉 읽히면서 loss를 재는 방식이다. 그래서 "벤치마크"라기보단 "평가용 코퍼스"에 가깝다.
+
+### 영어권의 표준 데이터셋 ###
+* WikiText-2 / WikiText-103: 위키피디아 good/featured 문서로 만든 데이터셋. 논문에서 제일 많이 보임. WikiText-2는 작고 빠른 스모크 테스트용, WikiText-103은 본격 측정용. HF: wikitext
+* Penn Treeboank (PTB): 옛날부터 쓰던 고전. 요즘 LLM 논문에선 잘 안 쓰지만 여전히 언급은 됨. 크기가 작고 전처리가 강해서 현대 LLM 평가엔 살짝 부적절
+* C4: T5 학습에 쓰인 웹 크롤 코퍼스. Common Crawl 정제본. 큰 규모라 일부 샘플링해서 측정
+* The Pile: EleutherAI가 만든 825GB 멀티도메인 코퍼스 (책, 논문, 코드, 위키 등 22개 서브셋). 서브셋별 PPL을 따로 보는 경우도 많음
+* LAMBADA: 마지막 단어를 맞추는 문맥 이해 평가. PPL도 재지만 accuracy가 더 중요한 지표. HF: lambada
+* PG-19: Project Gutenberg의 장문 소설. 긴 컨텍스트 평가용
+* RedPajama / SlimPajama: LLaMA 재현용으로 만든 오픈 대형 코퍼스. 일부를 validation으로 써서 PPL 측정
+
+### 양자화/압축 논문에서 사실상 표준 ###
+GPTQ, AWQ, SmoothQuant 같은 논문들은 거의 항상 아래의 조합을 사용한다.
+
+* WikiText-2
+* C4 (validation split)
+* PTB (가끔)
+이 세 개의 PPL로, 양자화 전후로 모델이 얼마나 안 망가졌는지 보는 게 관례이다.
+
+### 긴 컨텍스트 평가 ###
+
+* PG-19: 장문 소설
+* GovReport, ArXiv: 긴 문서
+* Needle-in-a-Haystack: 엄밀히는 PPL 아니고 검색 성공률이지만 long-context 평가에서 자주 같이 언급됨
+
+### 한국어 ###
+
+* KLUE: 종합 벤치마크인데 PPL 직접 측정보다는 downstream task 위주
+* 나무위키 / 한국어 위키: 직접 받아서 쓰는 경우가 많음. 표준화된 split이 있진 않아요
+* KoWiki, Modu (국립국어원 모두의 말뭉치): 한국어 PPL 측정에 자주 동원됨
+
+> [!NOTE]
+> PPL은 토크나이저가 다르면 절대 비교가 불가하고 같은 모델 계열끼리만 의미가 있다. 예를들어 LLaMA끼리, Qwen끼리 이런 식이다.
+> 그래서 요즘은 "모델 성능 평가"로는 PPL보다 MMLU, HellaSwag, GSM8K 같은 downstream 벤치를 더 신뢰한다. PPL은 주로 "양자화/프루닝 후에 분포가 덜 망가졌나"를 보는 용도로 남아있다.
+> 데이터셋 오염(contamination) 이슈 때문에 최근 모델은 WikiText 같은 공개 코퍼스의 PPL이 비정상적으로 낮게 나올 수 있어 해석할 때 주의가 필요하다.
+
+
 ## 레퍼런스 ##
 
 * https://artificialanalysis.ai/leaderboards/models

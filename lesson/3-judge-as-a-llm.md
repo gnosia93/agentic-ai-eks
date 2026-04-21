@@ -36,8 +36,15 @@ import json
 import re
 from openai import OpenAI
 
-client = OpenAI(base_url="http://localhost:8000/v1", api_key="dummy")
-MODEL = "Qwen/Qwen2.5-32B-Instruct"  # 실제 서빙 중인 모델명으로
+# === 심판 모델 (평가자) ===
+JUDGE_CLIENT = OpenAI(base_url="http://localhost:8000/v1", api_key="dummy")
+JUDGE_MODEL = "Qwen/Qwen2.5-32B-Instruct"
+
+# === 평가 대상 모델 (답변자) ===
+# 같은 서버의 다른 모델이면 동일 base_url + 다른 모델명
+# 별도 서버로 서빙 중이면 base_url 포트만 바꾸면 됨
+TARGET_CLIENT = OpenAI(base_url="http://localhost:8001/v1", api_key="dummy")
+TARGET_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 
 SYSTEM_PROMPT = """당신은 AI 응답 품질 평가 전문가입니다.
 - 점수는 엄격하게 매기세요. 모든 항목에 만점을 주는 경향을 피하세요.
@@ -67,7 +74,6 @@ USER_TEMPLATE = """다음 답변을 평가하세요.
   "overall": <1-5 평균 또는 종합>
 }}"""
 
-
 def _extract_json(text: str) -> dict:
     """코드펜스나 앞뒤 잡음이 있어도 JSON만 뽑아서 파싱."""
     # ```json ... ``` 제거
@@ -78,15 +84,23 @@ def _extract_json(text: str) -> dict:
         raise ValueError(f"No JSON found in: {text[:200]}")
     return json.loads(match.group(0))
 
+def generate_answer(question: str) -> str:
+    """평가 대상 모델이 답변 생성."""
+    resp = TARGET_CLIENT.chat.completions.create(
+        model=TARGET_MODEL,
+        messages=[{"role": "user", "content": question}],
+        temperature=0.7,
+        max_tokens=500,
+    )
+    return resp.choices[0].message.content
 
 def llm_judge(question: str, answer: str) -> dict:
-    resp = client.chat.completions.create(
-        model=MODEL,
+    """심판 모델이 답변 평가."""
+    resp = JUDGE_CLIENT.chat.completions.create(
+        model=JUDGE_MODEL,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": USER_TEMPLATE.format(
-                question=question, answer=answer
-            )},
+            {"role": "user", "content": USER_TEMPLATE.format(question=question, answer=answer)},
         ],
         temperature=0,
         max_tokens=600,
@@ -96,12 +110,20 @@ def llm_judge(question: str, answer: str) -> dict:
     content = resp.choices[0].message.content
     return _extract_json(content)
 
+def evaluate(question: str) -> dict:
+    """답변 생성 + 판정을 한 번에."""
+    answer = generate_answer(question)
+    scores = llm_judge(question, answer)
+    return {
+        "question": question,
+        "target_model": TARGET_MODEL,
+        "judge_model": JUDGE_MODEL,
+        "answer": answer,
+        "scores": scores,
+    }
 
 if __name__ == "__main__":
-    result = llm_judge(
-        question="EFA와 일반 네트워크의 차이점은?",
-        answer="EFA는 OS bypass로 저지연 통신을 제공합니다.",
-    )
+    result = evaluate("EFA와 일반 네트워크의 차이점은?")
     print(json.dumps(result, ensure_ascii=False, indent=2))
 ```
 * 평가 LLM은 평가 대상 모델보다 같거나 더 강한 모델을 써야 한다. (보통 GPT-4, Claude 등)
@@ -109,6 +131,22 @@ if __name__ == "__main__":
 * Pairwise에서 답변 순서를 바꿔서 2번 평가하면 위치 편향(position bias)을 줄일 수 있다.
 * 길이 편향(Length bias) - Judge는 긴 답을 선호하는 경향이 있다.
 * Judge 자체의 검증 - "golden set 50~200개로 judge와 사람 라벨의 상관관계(Spearman/Cohen's kappa)를 확인"
+
+[결과]
+```
+{
+  "question": "EFA와 일반 네트워크의 차이점은?",
+  "target_model": "meta-llama/Llama-3.1-8B-Instruct",
+  "judge_model": "Qwen/Qwen2.5-32B-Instruct",
+  "answer": "EFA(Elastic Fabric Adapter)는 AWS에서 제공하는...",
+  "scores": {
+    "correctness": {"reason": "기술적 설명은 정확하나 ...", "score": 4},
+    "completeness": {"reason": "핵심은 다뤘지만 ...", "score": 3},
+    "practicality": {"reason": "실제 사용 시나리오 언급 부족", "score": 3},
+    "overall": 3
+  }
+}
+```
 
 
 ### 4. 실전 주의사항 (편향과 검증) ###

@@ -81,7 +81,7 @@ _Drawn using Nano Banana 2.0 with a rough prompt, Not perfect but it's amazing !
 * [AI Engineering - Prompt/Context/Harness](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a5.harness-eng.md)
 * [promptfoo 로 모델 평가하기](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a7.promptfoo.md)
 * [TensorRT-LLM Speculative 디코딩](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a8-speculative-decoding.md)
-* [Neo4j로 지식 그래프 구현하기](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a9-ontology-neo4j.md)      
+* [Neo4j로 지식 그래프 구현하기 (온톨로지)](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/a9-ontology-neo4j.md)      
 * Agentic AI
   - [멀티 에이전트 오케스트레이션](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/6-multi-agent.md)
   - [프로덕션 최적화 및 고려사항](https://github.com/gnosia93/eks-agentic-ai/blob/main/lesson/6-production-optim.md)

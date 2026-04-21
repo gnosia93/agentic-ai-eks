@@ -77,6 +77,7 @@ sleep 10
 echo "INSTANCE_DNS: $(aws ec2 describe-instances --instance-ids $INSTANCE_ID --region $AWS_REGION \
   --query 'Reservations[0].Instances[0].PublicDnsName' --output text)"
 ```
+생성된 EC2 인스턴스의 AMI 는 `Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.7 (Ubuntu 22.04)` 에 해당하는 것으로 `source /opt/pytorch/bin/activate` 를 이용하여 pytorch 가상환경을 활성화 할 수 있다. 
 
 > [!TIP]
 > 인스턴스 삭제

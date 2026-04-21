@@ -17,7 +17,6 @@ spec:
     spec:
       serviceAccountName: llm-eval-sa
       nodeSelector:
-        nvidia.com/gpu.present: "true"
         node.kubernetes.io/instance-type: "g7e.4xlarge"
       tolerations:
         - key: nvidia.com/gpu

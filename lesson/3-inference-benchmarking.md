@@ -10,34 +10,22 @@
 * 언어: 한국어 지원 수준
 운영 비용: 위 1+2+3 합산해서 "달러당 품질"
 
-### 측정방법 ###
-
+### 성능 측정 ###
 ```
-# vLLM 소스 받기
-cd ~
-git clone https://github.com/vllm-project/vllm.git
-cd vllm
+pip install llmperf
 
-# 현재 설치된 vLLM 버전과 같은 태그로 체크아웃 (중요)
-pip show vllm | grep Version
-# 예: Version: 0.6.3
-git checkout v0.6.3
+export OPENAI_API_BASE="http://localhost:8000/v1"
+export OPENAI_API_KEY="dummy"
 
-# 의존성만 추가 설치 (vLLM 본체는 이미 있음)
-pip install aiohttp datasets transformers
-```
-
-```
-cd ~/vllm
-
-python benchmarks/benchmark_serving.py \
-  --backend vllm \
-  --base-url http://localhost:8000 \
-  --model Qwen/Qwen2.5-7B-Instruct \
-  --dataset-name sharegpt \
-  --dataset-path ShareGPT_V3_unfiltered_cleaned_split.json \
-  --num-prompts 100 \
-  --request-rate 10
+python token_benchmark_ray.py \
+  --model "Qwen/Qwen2.5-7B-Instruct" \
+  --mean-input-tokens 1024 \
+  --stddev-input-tokens 200 \
+  --mean-output-tokens 128 \
+  --stddev-output-tokens 30 \
+  --max-num-completed-requests 100 \
+  --num-concurrent-requests 8 \
+  --llm-api openai
 ```
 
 ### 전용 벤치마크 도구 ###

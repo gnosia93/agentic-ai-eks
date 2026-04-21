@@ -145,7 +145,7 @@ run_eval() {
   }
   trap cleanup_pf RETURN
 
-  echo "\n=== [$(date +%T)] $model ==="
+  echo -e "\n=== [$(date +%T)] $model ==="
 
   # 1. vLLM 매니페스트 생성 및 배포
   export MODEL="$model"

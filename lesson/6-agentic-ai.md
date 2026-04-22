@@ -71,9 +71,6 @@ Reason:  "이제 답변하기에 충분하다"
 
 
 ### [1. @tool 콜링](https://github.com/gnosia93/langgraph-agentic-ai/blob/main/lesson/6-tool-calling.md) ###
-  - @tool 데코레이터
-  - ToolNode + 조건부 엣지
-  - 실습: 간단한 계산/검색 도구 호출하는 에이전트
 
 ### 2. RAG를 에이전트 도구로 (L5와 연결) ###
   - L5에서 만든 RAG를 @tool로 감싸기

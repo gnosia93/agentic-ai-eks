@@ -7,68 +7,47 @@ resource "aws_security_group" "fsx_lustre" {
   vpc_id      = aws_vpc.main.id
 }
 
-# Lustre 포트 988 (self-referencing)
-resource "aws_security_group_rule" "fsx_lustre_988_self" {
+# EFA는 all-traffic self-reference 필요 (ingress + egress 모두)
+resource "aws_security_group_rule" "fsx_self_ingress_all" {
   type              = "ingress"
-  from_port         = 988
-  to_port           = 988
-  protocol          = "tcp"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
   security_group_id = aws_security_group.fsx_lustre.id
   self              = true
-  description       = "Lustre traffic within SG"
+  description       = "EFA all traffic self"
 }
 
-# Lustre 포트 1018-1023 (self-referencing)
-resource "aws_security_group_rule" "fsx_lustre_1018_1023_self" {
-  type              = "ingress"
-  from_port         = 1018
-  to_port           = 1023
-  protocol          = "tcp"
+resource "aws_security_group_rule" "fsx_self_egress_all" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
   security_group_id = aws_security_group.fsx_lustre.id
   self              = true
-  description       = "Lustre traffic within SG"
+  description       = "EFA all traffic self"
 }
 
-# EKS 노드 SG에서 FSx SG로의 접근 허용
-resource "aws_security_group_rule" "eks_to_fsx_988" {
+# EKS 노드 → FSx (all)
+resource "aws_security_group_rule" "eks_to_fsx_all" {
   type                     = "ingress"
-  from_port                = 988
-  to_port                  = 988
-  protocol                 = "tcp"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
   security_group_id        = aws_security_group.fsx_lustre.id
   source_security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
-  description              = "EKS nodes to FSx Lustre"
+  description              = "EKS nodes to FSx (EFA enabled)"
 }
 
-resource "aws_security_group_rule" "eks_to_fsx_1018_1023" {
+# FSx → EKS 노드 (all, 반대 방향)
+resource "aws_security_group_rule" "fsx_to_eks_all" {
   type                     = "ingress"
-  from_port                = 1018
-  to_port                  = 1023
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.fsx_lustre.id
-  source_security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
-  description              = "EKS nodes to FSx Lustre"
-}
-
-# FSx가 EKS 노드로 응답 트래픽 (반대 방향)
-resource "aws_security_group_rule" "fsx_to_eks_988" {
-  type                     = "ingress"
-  from_port                = 988
-  to_port                  = 988
-  protocol                 = "tcp"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
   security_group_id        = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
   source_security_group_id = aws_security_group.fsx_lustre.id
-  description              = "FSx Lustre to EKS nodes"
-}
-
-resource "aws_security_group_rule" "fsx_to_eks_1018_1023" {
-  type                     = "ingress"
-  from_port                = 1018
-  to_port                  = 1023
-  protocol                 = "tcp"
-  security_group_id        = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
-  source_security_group_id = aws_security_group.fsx_lustre.id
-  description              = "FSx Lustre to EKS nodes"
+  description              = "FSx to EKS nodes (EFA enabled)"
 }
 
 # ---------------------------------------------------

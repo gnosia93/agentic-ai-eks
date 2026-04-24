@@ -83,35 +83,29 @@ kind: LeaderWorkerSet
 metadata:
   name: vllm-llama-405b
   namespace: llm-serving
+  annotations:
+    leaderworkerset.sigs.k8s.io/exclusive-topology: topology.kubernetes.io/zone
 spec:
   replicas: 1
-
-  # 업데이트 전략: 한 번에 하나씩 교체, 추가 그룹 생성 안 함
   rolloutStrategy:
     type: RollingUpdate
     rollingUpdateConfiguration:
       maxUnavailable: 1
       maxSurge: 0
-
   leaderWorkerTemplate:
-    size: 2                                    # Leader 1 + Worker 1
+    size: 2
     restartPolicy: RecreateGroupOnPodRestart
-
-    # 서브그룹 배치 정책: 같은 zone에 묶어서 배치
-    subGroupPolicy:
-      subGroupSize: 2
-      type: TopologyAwarePlacement
-      topology:
-        - topologyKey: topology.kubernetes.io/zone
-
     leaderTemplate:
       metadata:
         labels:
           role: leader
       spec:
+        terminationGracePeriodSeconds: 120
+        nodeSelector:
+          node.kubernetes.io/instance-type: p5.48xlarge
         containers:
           - name: vllm-leader
-            image: vllm/vllm-openai:latest
+            image: vllm/vllm-openai:v0.6.3
             command: ["/bin/bash", "-c"]
             args:
               - |
@@ -122,25 +116,87 @@ spec:
                   --tensor-parallel-size=8 \
                   --pipeline-parallel-size=2 \
                   --distributed-executor-backend=ray
+            env:
+              - name: HUGGING_FACE_HUB_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-token
+                    key: token
+              - name: HF_HOME
+                value: /models
             resources:
               limits:
                 nvidia.com/gpu: 8
+                vpc.amazonaws.com/efa: 32
+                memory: 1000Gi
+                cpu: "48"
             ports:
               - containerPort: 8000
-
+            livenessProbe:
+              httpGet:
+                path: /health
+                port: 8000
+              initialDelaySeconds: 900
+              periodSeconds: 30
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: 8000
+              initialDelaySeconds: 900
+              periodSeconds: 10
+            volumeMounts:
+              - name: dshm
+                mountPath: /dev/shm
+              - name: model-cache
+                mountPath: /models
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 32Gi
+          - name: model-cache
+            persistentVolumeClaim:
+              claimName: llama-405b-cache
     workerTemplate:
       spec:
+        terminationGracePeriodSeconds: 120
+        nodeSelector:
+          node.kubernetes.io/instance-type: g7e.48xlarge
         containers:
           - name: vllm-worker
-            image: vllm/vllm-openai:latest
+            image: vllm/vllm-openai:v0.6.3
             command: ["/bin/bash", "-c"]
             args:
               - |
                 bash /vllm-workspace/ray_init.sh worker \
                   --ray_address=$LWS_LEADER_ADDRESS
+            env:
+              - name: HUGGING_FACE_HUB_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-token
+                    key: token
+              - name: HF_HOME
+                value: /models
             resources:
               limits:
                 nvidia.com/gpu: 8
+                vpc.amazonaws.com/efa: 32
+                memory: 1000Gi
+                cpu: "48"
+            volumeMounts:
+              - name: dshm
+                mountPath: /dev/shm
+              - name: model-cache
+                mountPath: /models
+        volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 32Gi
+          - name: model-cache
+            persistentVolumeClaim:
+              claimName: llama-405b-cache
 EOF
 ```
 눈여겨 볼점은 리더와 워커의 `명령어셋이 다르다는 점`으로, 리더는 Ray 클러스터를 시작하고 vLLM 서버를 띄우고, 워커는 리더가 띄운 Ray에 조인만 한다.

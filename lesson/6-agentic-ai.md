@@ -1,5 +1,16 @@
 ## LangGraph로 Agentic AI 만들기 ##
 
+
+* 오전: 기본기 (A의 1~4)
+* 오후 1부: 멀티 에이전트 — Supervisor 패턴, Swarm 패턴
+* 오후 2부: LangGraph Platform — 커스텀 인증(OAuth), 리소스 ACL, Postgres 체크포인터
+* 오후 3부: 관측성 — LangSmith로 트레이싱, 평가(evaluation) 파이프라인
+결과물: 멀티 에이전트가 인증된 사용자별로 격리돼 작동하고, LangSmith에서 추적·평가까지 되는 시스템.
+
+
+
+
+
 ### [1. 주피터 설정] ###
 
 ### [2. @tool 콜링](https://github.com/gnosia93/langgraph-agentic-ai/blob/main/lesson/6-tool-calling.md) ###

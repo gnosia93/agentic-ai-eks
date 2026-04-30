@@ -1,4 +1,4 @@
-## Langgraph 기본기 ##
+## Langgraph 기본기 (30분) ##
 
 ### 1. 왜 LangGraph인가 ###
 

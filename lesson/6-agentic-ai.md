@@ -18,17 +18,6 @@
 ---
 각 모듈 상세
 ```
-M2. 도구 + 조건부 라우팅 + HITL (75분)
-목표: 실제 업무 에이전트의 뼈대 패턴을 모두 경험한다.
-
-@tool 데코레이터로 도구 정의
-ToolNode와 tools_condition
-조건부 엣지(add_conditional_edges)로 분기 설계
-interrupt로 사람 승인 끼워 넣기
-실습 2-1: 날씨 조회 + 계산기 도구를 가진 ReAct 에이전트. 실습 2-2: 도구가 외부에 쓰기 작업(예: 이메일 전송)을 할 때, 실행 직전에 interrupt로 멈추고 사람이 승인한 뒤에만 진행하도록 개조.
-
-결과물: "민감 작업은 사람 승인, 나머지는 자동"으로 동작하는 에이전트.
-
 M3. 멀티 에이전트 — Supervisor 패턴 (75분)
 목표: 역할 분담이 필요한 시스템을 Supervisor로 조율한다.
 
@@ -50,6 +39,7 @@ M4. Swarm 패턴 (60분)
 langgraph-swarm의 핸드오프 개념
 Supervisor와의 차이: 중앙 라우터가 없고, 마지막으로 말한 에이전트가 다음 턴을 받음
 고객 상담 같은 "페르소나 간 전환" 시나리오에 잘 맞는 이유
+
 실습 4-1: 여행 예약 Swarm
 
 flight_agent, hotel_agent, car_rental_agent
